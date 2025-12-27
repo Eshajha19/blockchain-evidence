@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🕵️ Investigator Dashboard - Evid-DGC</title>
+    <link rel="stylesheet" href="styles.css?v=7">
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
+    <script src="config.js?v=7"></script>
+    <script src="storage.js?v=7"></script>
+    <script src="dashboard-manager.js?v=7"></script>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="dashboard-nav">
+        <div class="container">
+            <div class="nav-content">
+                <a href="index.html" class="nav-brand">🔐 EVID-DGC</a>
+                <div class="nav-items">
+                    <span id="userRole" class="badge badge-investigator">🕵️ Investigator</span>
+                    <span id="userWallet" class="wallet-display">Loading...</span>
+                    <button class="btn btn-outline btn-sm" onclick="logout()">🚪 Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Dashboard Hero -->
+        <div class="dashboard-hero">
+            <h1>🕵️ Investigator Dashboard</h1>
+            <p>Create and manage investigations with blockchain security</p>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <span class="stat-icon">📁</span>
+                    <span class="stat-text" id="activeCases">0 Active Cases</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="stat-icon">⏳</span>
+                    <span class="stat-text" id="pendingAnalysis">0 Pending Analysis</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="stat-icon">⚖️</span>
+                    <span class="stat-text" id="awaitingLegal">0 Awaiting Legal Review</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h2>🚀 Quick Actions</h2>
+            </div>
+            <div class="card-body">
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="showCreateCaseForm()">
+                        ➕ Create New Case
+                    </button>
+                    <button class="btn btn-outline" onclick="showMyCases()">
+                        📋 My Cases
+                    </button>
+                    <button class="btn btn-outline" onclick="showUploadEvidence()">
+                        📤 Upload Evidence
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Required -->
+        <div id="actionRequired" class="card" style="display: none;">
+            <div class="card-header">
+                <h2>🔴 Action Required</h2>
+            </div>
+            <div class="card-body" id="actionItems">
+                <!-- Dynamic content loaded here -->
+            </div>
+        </div>
+
+        <!-- My Cases -->
+        <div id="myCasesSection" class="card">
+            <div class="card-header">
+                <h2>📋 My Cases</h2>
+                <button class="btn btn-outline btn-sm" onclick="refreshCases()">🔄 Refresh</button>
+            </div>
+            <div class="card-body">
+                <div id="casesList" class="cases-grid">
+                    <div class="text-center p-8">
+                        <div class="loading mb-4"></div>
+                        <p>Loading your cases...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Evidence Uploads -->
+        <div class="card">
+            <div class="card-header">
+                <h2>📤 Recent Evidence Uploads</h2>
+            </div>
+            <div class="card-body">
+                <div id="recentUploads" class="evidence-list">
+                    <div class="text-center p-4">
+                        <p class="text-muted">No recent uploads</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Case Modal -->
+    <div id="createCaseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>➕ Create New Case</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="createCaseForm">
+                    <div class="form-group">
+                        <label for="caseTitle">Case Title *</label>
+                        <input type="text" id="caseTitle" class="form-control" placeholder="Brief case description" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="caseDescription">Description</label>
+                        <textarea id="caseDescription" class="form-control" rows="3" placeholder="Detailed case description"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="crimeType">Crime Type</label>
+                            <select id="crimeType" class="form-control">
+                                <option value="">Select type</option>
+                                <option value="Assault">Assault</option>
+                                <option value="Burglary">Burglary</option>
+                                <option value="Fraud">Fraud</option>
+                                <option value="Theft">Theft</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="location">Location</label>
+                            <input type="text" id="location" class="form-control" placeholder="Incident location">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="suspects">Suspects</label>
+                        <input type="text" id="suspects" class="form-control" placeholder="Known suspects (optional)">
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-success">✅ Create Case</button>
+                        <button type="button" class="btn btn-outline" onclick="closeModal()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Case Detail Modal -->
+    <div id="caseModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2 id="caseModalTitle">Case Details</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="caseModalContent" class="modal-body">
+                <!-- Content loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Investigator-specific dashboard logic
+        let currentUser = null;
+        let userCases = [];
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            await initializeInvestigatorDashboard();
+        });
+
+        async function initializeInvestigatorDashboard() {
+            try {
+                // Get current user
+                const wallet = localStorage.getItem('currentUser');
+                if (!wallet) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                // Load user data (handle both database and localStorage)
+                let userData = null;
+                try {
+                    const userResponse = await fetch(`/api/user/${wallet}`);
+                    const result = await userResponse.json();
+                    userData = result.user;
+                } catch (error) {
+                    console.log('API not available, checking storage');
+                }
+
+                // Fallback to storage.js
+                if (!userData && typeof storage !== 'undefined') {
+                    try {
+                        userData = await storage.getUser(wallet);
+                    } catch (error) {
+                        console.log('Database not available');
+                    }
+                }
+
+                // Fallback to localStorage
+                if (!userData) {
+                    const savedUser = localStorage.getItem('evidUser_' + wallet);
+                    if (savedUser) {
+                        userData = JSON.parse(savedUser);
+                    }
+                }
+
+                if (!userData) {
+                    alert('User data not found. Please login again.');
+                    logout();
+                    return;
+                }
+
+                // Check role (handle both string and number formats)
+                const userRole = userData.role;
+                if (userRole !== 'investigator' && userRole !== 2) {
+                    alert('Access denied. Investigator role required.');
+                    logout();
+                    return;
+                }
+
+                currentUser = userData;
+                updateUserUI(currentUser);
+
+                // Load dashboard data (mock for now)
+                await loadDashboardStats();
+                await loadCases();
+                await loadActionItems();
+
+            } catch (error) {
+                console.error('Dashboard initialization error:', error);
+                alert('Failed to load dashboard. Please try again.');
+            }
+        }
+
+        function updateUserUI(user) {
+            const isTestUser = localStorage.getItem('testUserMode') === 'true';
+            const userName = user.full_name || 'Investigator';
+            
+            document.getElementById('userRole').textContent = isTestUser ? `🕵️ ${userName} (Test)` : `🕵️ ${userName}`;
+            document.getElementById('userWallet').textContent = `${user.wallet_address.slice(0, 6)}...${user.wallet_address.slice(-4)}`;
+        }
+
+        async function loadDashboardStats() {
+            try {
+                // Mock stats for demo
+                const mockStats = {
+                    activeCases: 3,
+                    pendingAnalysis: 1,
+                    awaitingLegal: 2
+                };
+
+                document.getElementById('activeCases').textContent = `${mockStats.activeCases} Active Cases`;
+                document.getElementById('pendingAnalysis').textContent = `${mockStats.pendingAnalysis} Pending Analysis`;
+                document.getElementById('awaitingLegal').textContent = `${mockStats.awaitingLegal} Awaiting Legal Review`;
+            } catch (error) {
+                console.error('Stats loading error:', error);
+            }
+        }
+
+        async function loadCases() {
+            try {
+                // Mock cases for demo
+                const mockCases = [
+                    {
+                        case_id: 'CASE-2024-001',
+                        title: 'Burglary Investigation',
+                        description: 'Break-in at downtown office building',
+                        status: 'OPEN',
+                        created_at: new Date().toISOString()
+                    },
+                    {
+                        case_id: 'CASE-2024-002', 
+                        title: 'Fraud Case',
+                        description: 'Financial fraud investigation',
+                        status: 'ANALYZING',
+                        created_at: new Date(Date.now() - 86400000).toISOString()
+                    }
+                ];
+                
+                userCases = mockCases;
+                renderCases(userCases);
+            } catch (error) {
+                console.error('Cases loading error:', error);
+                document.getElementById('casesList').innerHTML = '<p class="text-center text-muted">Failed to load cases</p>';
+            }
+        }
+
+        function renderCases(cases) {
+            const container = document.getElementById('casesList');
+
+            if (cases.length === 0) {
+                container.innerHTML = '<p class="text-center text-muted">No cases found. Create your first case!</p>';
+                return;
+            }
+
+            const casesHtml = cases.map(caseItem => `
+                <div class="case-card" onclick="openCase('${caseItem.case_id}')">
+                    <div class="case-header">
+                        <h3>${caseItem.title}</h3>
+                        <span class="badge badge-${getStatusClass(caseItem.status)}">${caseItem.status}</span>
+                    </div>
+                    <div class="case-meta">
+                        <span>📅 ${new Date(caseItem.created_at).toLocaleDateString()}</span>
+                        <span>🏷️ ${caseItem.case_id}</span>
+                    </div>
+                    <div class="case-description">
+                        ${caseItem.description || 'No description provided'}
+                    </div>
+                    <div class="case-actions">
+                        <button class="btn btn-sm btn-outline" onclick="event.stopPropagation(); assignAnalyst('${caseItem.case_id}')">
+                            🔬 Assign Analyst
+                        </button>
+                        <button class="btn btn-sm btn-outline" onclick="event.stopPropagation(); updateStatus('${caseItem.case_id}')">
+                            📝 Update Status
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = casesHtml;
+        }
+
+        async function loadActionItems() {
+            // Check for cases needing attention
+            const needsAttention = userCases.filter(c =>
+                c.status === 'ANALYZING' || c.status === 'LEGAL_REVIEW'
+            );
+
+            if (needsAttention.length > 0) {
+                const actionHtml = needsAttention.map(c => `
+                    <div class="action-item">
+                        <div class="action-icon">⚠️</div>
+                        <div class="action-content">
+                            <strong>${c.title}</strong>
+                            <p>Status: ${c.status} - Action required</p>
+                        </div>
+                        <button class="btn btn-sm btn-primary" onclick="openCase('${c.case_id}')">View</button>
+                    </div>
+                `).join('');
+
+                document.getElementById('actionItems').innerHTML = actionHtml;
+                document.getElementById('actionRequired').style.display = 'block';
+            }
+        }
+
+        function showCreateCaseForm() {
+            document.getElementById('createCaseModal').classList.add('active');
+        }
+
+        async function showMyCases() {
+            await loadCases();
+            document.getElementById('myCasesSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showUploadEvidence() {
+            alert('Evidence upload functionality coming soon!');
+        }
+
+        function getStatusClass(status) {
+            const classes = {
+                'CREATED': 'secondary',
+                'OPEN': 'primary',
+                'ANALYZING': 'warning',
+                'LEGAL_REVIEW': 'info',
+                'APPROVED': 'success',
+                'IN_CUSTODY': 'secondary',
+                'READY_TRIAL': 'warning',
+                'IN_TRIAL': 'danger',
+                'CLOSED': 'dark'
+            };
+            return classes[status] || 'secondary';
+        }
+
+        function openCase(caseId) {
+            window.location.href = `case-detail.html?caseId=${caseId}`;
+        }
+
+        function assignAnalyst(caseId) {
+            alert(`Assign analyst for case ${caseId} - functionality coming soon!`);
+        }
+
+        function updateStatus(caseId) {
+            alert(`Update status for case ${caseId} - functionality coming soon!`);
+        }
+
+        function refreshCases() {
+            loadCases();
+        }
+
+        function closeModal() {
+            document.querySelectorAll('.modal').forEach(modal => modal.classList.remove('active'));
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+
+        // Form submission
+        document.getElementById('createCaseForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = {
+                title: document.getElementById('caseTitle').value,
+                description: document.getElementById('caseDescription').value,
+                crimeType: document.getElementById('crimeType').value,
+                location: document.getElementById('location').value,
+                suspects: document.getElementById('suspects').value
+            };
+
+            try {
+                const response = await fetch('/api/cases', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-user-wallet': currentUser.wallet_address
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('Case created successfully!');
+                    closeModal();
+                    loadCases();
+                    loadDashboardStats();
+                } else {
+                    alert('Failed to create case: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Case creation error:', error);
+                alert('Failed to create case. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>

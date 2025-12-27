@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏛️ Court Official Dashboard - EVID-DGC</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="dashboard-nav">
+        <div class="container">
+            <div class="nav-content">
+                <a href="index.html" class="nav-brand">🔐 EVID-DGC</a>
+                <div class="nav-items">
+                    <span id="userRole" class="badge badge-court">🏛️ Court Official</span>
+                    <span id="userWallet" class="wallet-display">Loading...</span>
+                    <button class="btn btn-outline btn-sm" onclick="logout()">🚪 Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="dashboard-hero">
+            <h1>🏛️ Court Official Dashboard</h1>
+            <p>Manage court proceedings and trial evidence</p>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <span class="stat-icon">⚖️</span>
+                    <span class="stat-text">0 Active Trials</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="stat-icon">📋</span>
+                    <span class="stat-text">0 Cases Ready</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>🚀 Quick Actions</h2>
+            </div>
+            <div class="card-body">
+                <div class="btn-group">
+                    <button class="btn btn-primary">⚖️ Active Trials</button>
+                    <button class="btn btn-outline">📋 Schedule Hearing</button>
+                    <button class="btn btn-outline">📄 Court Records</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>⚖️ Court Proceedings</h2>
+            </div>
+            <div class="card-body">
+                <div class="text-center p-4">
+                    <p class="text-muted">No active court proceedings</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="storage.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            await initializeDashboard();
+        });
+
+        async function initializeDashboard() {
+            const wallet = localStorage.getItem('currentUser');
+            if (!wallet) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const isTestUser = localStorage.getItem('testUserMode') === 'true';
+            if (isTestUser) {
+                document.getElementById('userRole').textContent = '🏛️ Court Official (Test)';
+            }
+            
+            document.getElementById('userWallet').textContent = wallet.substring(0, 8) + '...';
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.replace('index.html');
+        }
+    </script>
+</body>
+</html>

@@ -304,8 +304,8 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
-    <script src="config.js?v=3"></script>
-    <script src="storage.js?v=3"></script>
+    <script src="config.js?v=7"></script>
+    <script src="storage.js?v=7"></script>
     <script>
         let currentAdmin = null;
 
@@ -357,7 +357,7 @@
 
         async function handleCreateUser(event) {
             event.preventDefault();
-            
+
             try {
                 const walletAddress = document.getElementById('userWalletAddress').value.trim();
                 const fullName = document.getElementById('userFullName').value.trim();
@@ -374,14 +374,28 @@
                     throw new Error('Please select a role');
                 }
 
-                await storage.createRegularUser(currentAdmin, {
-                    walletAddress,
-                    fullName,
-                    role,
-                    department: department || 'General',
-                    jurisdiction: jurisdiction || 'General',
-                    badgeNumber
+                const response = await fetch('/api/admin/create-user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        adminWallet: currentAdmin,
+                        userData: {
+                            walletAddress,
+                            fullName,
+                            role,
+                            department: department || 'General',
+                            jurisdiction: jurisdiction || 'General',
+                            badgeNumber
+                        }
+                    })
                 });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to create user');
+                }
 
                 showAlert('User account created successfully!', 'success');
                 document.getElementById('createUserForm').reset();
@@ -393,7 +407,7 @@
 
         async function handleCreateAdmin(event) {
             event.preventDefault();
-            
+
             try {
                 const walletAddress = document.getElementById('adminWalletAddress').value.trim();
                 const fullName = document.getElementById('adminFullName').value.trim();
@@ -402,10 +416,24 @@
                     throw new Error('Invalid wallet address format');
                 }
 
-                await storage.createAdminUser(currentAdmin, {
-                    walletAddress,
-                    fullName
+                const response = await fetch('/api/admin/create-admin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        adminWallet: currentAdmin,
+                        adminData: {
+                            walletAddress,
+                            fullName
+                        }
+                    })
                 });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to create admin');
+                }
 
                 showAlert('Administrator created successfully!', 'success');
                 document.getElementById('createAdminForm').reset();
@@ -441,7 +469,20 @@
 
         async function loadAllUsers() {
             try {
-                const users = await storage.getAllUsers();
+                const response = await fetch('/api/admin/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ adminWallet: currentAdmin })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load users');
+                }
+
+                const data = await response.json();
+                const users = data.users;
                 const tbody = document.getElementById('usersTableBody');
                 const userCount = document.getElementById('userCount');
 
@@ -461,8 +502,8 @@
                         <td>${user.is_active ? '✅ Active' : '❌ Inactive'}</td>
                         <td>${new Date(user.created_at).toLocaleDateString()}</td>
                         <td>
-                            ${user.is_active && user.wallet_address !== currentAdmin ? 
-                                `<button class="btn btn-sm btn-danger" onclick="deleteUser('${user.wallet_address}')">🗑️ Delete</button>` : 
+                            ${user.is_active && user.wallet_address !== currentAdmin ?
+                                `<button class="btn btn-sm btn-danger" onclick="deleteUser('${user.wallet_address}')">🗑️ Delete</button>` :
                                 user.wallet_address === currentAdmin ? '<span class="text-muted">Self</span>' : '<span class="text-muted">Deleted</span>'
                             }
                         </td>
@@ -470,31 +511,50 @@
                 `).join('');
             } catch (error) {
                 console.error('Error loading users:', error);
-                showAlert('Error loading users', 'error');
+                showAlert('Error loading users: ' + error.message, 'error');
             }
         }
 
         async function loadSystemOverview() {
             try {
-                const [users, evidence, cases] = await Promise.all([
-                    storage.getAllUsers(),
-                    storage.getAllEvidence(),
-                    storage.getAllCases()
-                ]);
+                // Try to load from API first
+                const response = await fetch('/api/dashboard/stats', {
+                    headers: {
+                        'x-user-wallet': currentAdmin
+                    }
+                });
 
-                document.getElementById('totalUsers').textContent = users.length;
-                document.getElementById('totalEvidence').textContent = evidence.length;
-                document.getElementById('totalCases').textContent = cases.filter(c => c.status === 'open').length;
+                if (response.ok) {
+                    const data = await response.json();
+                    // Update stats from API data
+                    document.getElementById('totalUsers').textContent = data.stats.totalUsers || 0;
+                    document.getElementById('totalEvidence').textContent = data.stats.totalEvidence || 0;
+                    document.getElementById('totalCases').textContent = data.stats.totalCases || 0;
+                    document.getElementById('recentActivity').textContent = data.stats.recentActivity || 0;
+                } else {
+                    // Fallback to storage methods
+                    const users = await storage.getAllUsers();
+                    document.getElementById('totalUsers').textContent = users.length;
+                    document.getElementById('totalEvidence').textContent = 'N/A';
+                    document.getElementById('totalCases').textContent = 'N/A';
+                    document.getElementById('recentActivity').textContent = 'N/A';
+                }
             } catch (error) {
                 console.error('Error loading system overview:', error);
+                // Show N/A for all stats if database isn't set up
+                document.getElementById('totalUsers').textContent = 'N/A';
+                document.getElementById('totalEvidence').textContent = 'N/A';
+                document.getElementById('totalCases').textContent = 'N/A';
+                document.getElementById('recentActivity').textContent = 'N/A';
             }
         }
 
         async function loadRecentActivity() {
             try {
+                // Try storage method first, but handle errors gracefully
                 const activities = await storage.getRecentActivity(10);
                 const activityFeed = document.getElementById('activityFeed');
-                
+
                 if (activities.length === 0) {
                     activityFeed.innerHTML = '<p class="text-muted">No recent activity</p>';
                     return;
@@ -507,11 +567,14 @@
                         ${activity.details ? `<div>${activity.details}</div>` : ''}
                     </div>
                 `).join('');
-                
+
                 document.getElementById('recentActivity').textContent = activities.length;
             } catch (error) {
                 console.error('Error loading recent activity:', error);
-                document.getElementById('activityFeed').innerHTML = '<p class="text-muted">Error loading activity</p>';
+                // Show helpful message if database isn't set up
+                const activityFeed = document.getElementById('activityFeed');
+                activityFeed.innerHTML = '<p class="text-muted">⚠️ Database not configured yet. Run database migration to see activity logs.</p>';
+                document.getElementById('recentActivity').textContent = 'N/A';
             }
         }
 
@@ -602,7 +665,22 @@
             }
 
             try {
-                await storage.deleteUser(currentAdmin, walletAddress);
+                const response = await fetch('/api/admin/delete-user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        adminWallet: currentAdmin,
+                        targetWallet: walletAddress
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to delete user');
+                }
+
                 showAlert('User deleted successfully', 'success');
                 await loadAllUsers();
             } catch (error) {
@@ -669,7 +747,7 @@
                 // Show loading
                 showAlert('Logging in as ' + testName + '...', 'success');
                 
-                // Redirect after short delay
+                // Redirect to dashboard.html which will route to correct role dashboard
                 setTimeout(() => {
                     window.location.href = 'dashboard.html';
                 }, 1000);

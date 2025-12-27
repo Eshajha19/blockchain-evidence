@@ -81,6 +81,123 @@ const logAdminAction = async (adminWallet, actionType, targetWallet, details) =>
     }
 };
 
+// Case Access Control Middleware
+const checkCasePermission = async (req, res, next) => {
+    try {
+        const { caseId } = req.params;
+        const { action } = req.query; // view, edit, approve, delete
+        const userWallet = req.headers['x-user-wallet'];
+
+        if (!userWallet || !validateWalletAddress(userWallet)) {
+            return res.status(401).json({ error: 'Invalid user wallet' });
+        }
+
+        // Get user info
+        const { data: user } = await supabase
+            .from('users')
+            .select('*')
+            .eq('wallet_address', userWallet)
+            .eq('is_active', true)
+            .single();
+
+        if (!user) {
+            return res.status(401).json({ error: 'User not found or inactive' });
+        }
+
+        // Admin and auditor have special permissions
+        if (user.role === 'admin') {
+            req.user = user;
+            return next();
+        }
+
+        if (user.role === 'auditor') {
+            if (action === 'view') {
+                req.user = user;
+                return next();
+            }
+            return res.status(403).json({ error: 'Auditors have read-only access' });
+        }
+
+        // Get case info
+        const { data: caseData } = await supabase
+            .from('cases')
+            .select('*')
+            .eq('case_id', caseId)
+            .single();
+
+        if (!caseData) {
+            return res.status(404).json({ error: 'Case not found' });
+        }
+
+        // Check permission matrix
+        const { data: permission } = await supabase
+            .from('role_case_permissions')
+            .select('*')
+            .eq('role', user.role)
+            .eq('case_status', caseData.status)
+            .single();
+
+        if (!permission) {
+            return res.status(403).json({ error: 'No permission defined for this role and case status' });
+        }
+
+        // Check basic permission
+        let hasPermission = false;
+        switch (action) {
+            case 'view':
+                hasPermission = permission.can_view;
+                break;
+            case 'edit':
+                hasPermission = permission.can_edit;
+                break;
+            case 'approve':
+                hasPermission = permission.can_approve;
+                break;
+            default:
+                hasPermission = false;
+        }
+
+        if (!hasPermission) {
+            return res.status(403).json({ error: 'Insufficient permissions for this action' });
+        }
+
+        // Check assignment requirement
+        if (permission.requires_assignment) {
+            let assignedUserId = null;
+            switch (user.role) {
+                case 'forensic_analyst':
+                    assignedUserId = caseData.assigned_analyst_id;
+                    break;
+                case 'legal_professional':
+                    assignedUserId = caseData.assigned_legal_pro_id;
+                    break;
+                case 'court_official':
+                    assignedUserId = caseData.assigned_court_official_id;
+                    break;
+                case 'evidence_manager':
+                    assignedUserId = caseData.assigned_evidence_manager_id;
+                    break;
+            }
+
+            if (assignedUserId !== user.id) {
+                return res.status(403).json({ error: 'You are not assigned to this case' });
+            }
+        }
+
+        // Check ownership for investigators
+        if (user.role === 'investigator' && caseData.investigator_id !== user.id) {
+            return res.status(403).json({ error: 'You can only access your own cases' });
+        }
+
+        req.user = user;
+        req.caseData = caseData;
+        next();
+    } catch (error) {
+        console.error('Permission check error:', error);
+        res.status(500).json({ error: 'Permission check failed' });
+    }
+};
+
 // API Routes
 
 // Health check
@@ -327,10 +444,474 @@ app.post('/api/user/delete-self', (req, res) => {
     });
 });
 
+// Case Management APIs
+
+// Get cases visible to user based on role and permissions
+app.get('/api/cases', async (req, res) => {
+    try {
+        const userWallet = req.headers['x-user-wallet'];
+
+        if (!userWallet || !validateWalletAddress(userWallet)) {
+            return res.status(401).json({ error: 'Invalid user wallet' });
+        }
+
+        // Get user info
+        const { data: user } = await supabase
+            .from('users')
+            .select('*')
+            .eq('wallet_address', userWallet)
+            .eq('is_active', true)
+            .single();
+
+        if (!user) {
+            return res.status(401).json({ error: 'User not found or inactive' });
+        }
+
+        let query = supabase.from('cases').select(`
+            *,
+            investigator:investigator_id(full_name),
+            assigned_analyst:assigned_analyst_id(full_name),
+            assigned_legal_pro:assigned_legal_pro_id(full_name),
+            assigned_evidence_manager:assigned_evidence_manager_id(full_name),
+            assigned_court_official:assigned_court_official_id(full_name)
+        `);
+
+        // Filter cases based on role
+        if (user.role === 'public_viewer') {
+            // Only closed public cases
+            query = query.eq('status', 'CLOSED').eq('is_public', true);
+        } else if (user.role === 'investigator') {
+            // Only cases where user is the investigator
+            query = query.eq('investigator_id', user.id);
+        } else if (user.role === 'forensic_analyst') {
+            // Cases assigned to this analyst
+            query = query.eq('assigned_analyst_id', user.id);
+        } else if (user.role === 'legal_professional') {
+            // Cases assigned to this legal professional
+            query = query.eq('assigned_legal_pro_id', user.id);
+        } else if (user.role === 'court_official') {
+            // Cases assigned to this court official
+            query = query.eq('assigned_court_official_id', user.id);
+        } else if (user.role === 'evidence_manager') {
+            // Cases assigned to this evidence manager
+            query = query.eq('assigned_evidence_manager_id', user.id);
+        }
+        // Admin and auditor can see all cases
+
+        const { data: cases, error } = await query.order('created_at', { ascending: false });
+
+        if (error) {
+            throw error;
+        }
+
+        res.json({ cases: cases || [] });
+    } catch (error) {
+        console.error('Get cases error:', error);
+        res.status(500).json({ error: 'Failed to get cases' });
+    }
+});
+
+// Get specific case details
+app.get('/api/cases/:caseId', checkCasePermission, async (req, res) => {
+    try {
+        const { caseId } = req.params;
+        const userWallet = req.headers['x-user-wallet'];
+
+        const { data: caseData, error } = await supabase
+            .from('cases')
+            .select(`
+                *,
+                investigator:investigator_id(full_name),
+                assigned_analyst:assigned_analyst_id(full_name),
+                assigned_legal_pro:assigned_legal_pro_id(full_name),
+                assigned_evidence_manager:assigned_evidence_manager_id(full_name),
+                assigned_court_official:assigned_court_official_id(full_name),
+                evidence(*, uploaded_by:uploaded_by(full_name))
+            `)
+            .eq('case_id', caseId)
+            .single();
+
+        if (error) {
+            throw error;
+        }
+
+        res.json({ case: caseData });
+    } catch (error) {
+        console.error('Get case error:', error);
+        res.status(500).json({ error: 'Failed to get case details' });
+    }
+});
+
+// Create new case (Investigators only)
+app.post('/api/cases', async (req, res) => {
+    try {
+        const userWallet = req.headers['x-user-wallet'];
+        const { title, description, crimeType, location, suspects } = req.body;
+
+        if (!userWallet || !validateWalletAddress(userWallet)) {
+            return res.status(401).json({ error: 'Invalid user wallet' });
+        }
+
+        // Get user info
+        const { data: user } = await supabase
+            .from('users')
+            .select('*')
+            .eq('wallet_address', userWallet)
+            .eq('is_active', true)
+            .single();
+
+        if (!user) {
+            return res.status(401).json({ error: 'User not found or inactive' });
+        }
+
+        if (user.role !== 'investigator' && user.role !== 'admin') {
+            return res.status(403).json({ error: 'Only investigators can create cases' });
+        }
+
+        if (!title) {
+            return res.status(400).json({ error: 'Case title is required' });
+        }
+
+        // Generate case ID
+        const caseId = `CASE-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
+
+        const { data: newCase, error } = await supabase
+            .from('cases')
+            .insert({
+                case_id: caseId,
+                title,
+                description,
+                status: 'CREATED',
+                investigator_id: user.id,
+                crime_type: crimeType,
+                location,
+                suspects,
+                is_public: false
+            })
+            .select()
+            .single();
+
+        if (error) {
+            throw error;
+        }
+
+        res.json({ success: true, case: newCase });
+    } catch (error) {
+        console.error('Create case error:', error);
+        res.status(500).json({ error: 'Failed to create case' });
+    }
+});
+
+// Update case status (Role-based permissions)
+app.put('/api/cases/:caseId/status', checkCasePermission, async (req, res) => {
+    try {
+        const { caseId } = req.params;
+        const { newStatus, notes } = req.body;
+        const user = req.user;
+        const caseData = req.caseData;
+
+        const validStatuses = ['CREATED', 'OPEN', 'ANALYZING', 'LEGAL_REVIEW', 'APPROVED', 'IN_CUSTODY', 'READY_TRIAL', 'IN_TRIAL', 'CLOSED'];
+        if (!validStatuses.includes(newStatus)) {
+            return res.status(400).json({ error: 'Invalid status' });
+        }
+
+        // Check if user can change status to this value
+        const { data: permission } = await supabase
+            .from('role_case_permissions')
+            .select('*')
+            .eq('role', user.role)
+            .eq('case_status', newStatus)
+            .single();
+
+        if (!permission || !permission.can_edit) {
+            return res.status(403).json({ error: 'Cannot change case to this status' });
+        }
+
+        const { data: updatedCase, error } = await supabase
+            .from('cases')
+            .update({
+                status: newStatus,
+                updated_at: new Date().toISOString()
+            })
+            .eq('case_id', caseId)
+            .select()
+            .single();
+
+        if (error) {
+            throw error;
+        }
+
+        // Log the status change
+        await supabase
+            .from('audit_logs')
+            .insert({
+                user_id: user.id,
+                action_type: 'CASE_STATUS_CHANGE',
+                entity_type: 'case',
+                entity_id: caseData.id,
+                old_values: { status: caseData.status },
+                new_values: { status: newStatus, notes }
+            });
+
+        res.json({ success: true, case: updatedCase });
+    } catch (error) {
+        console.error('Update case status error:', error);
+        res.status(500).json({ error: 'Failed to update case status' });
+    }
+});
+
+// Assign case to role (Permission-based)
+app.post('/api/cases/:caseId/assign', checkCasePermission, async (req, res) => {
+    try {
+        const { caseId } = req.params;
+        const { role, userId } = req.body;
+        const user = req.user;
+
+        // Check if user can delegate
+        const { data: permission } = await supabase
+            .from('role_case_permissions')
+            .select('*')
+            .eq('role', user.role)
+            .eq('case_status', req.caseData.status)
+            .single();
+
+        if (!permission || !permission.can_delegate) {
+            return res.status(403).json({ error: 'Cannot assign cases' });
+        }
+
+        // Get target user
+        const { data: targetUser } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', userId)
+            .eq('role', role)
+            .eq('is_active', true)
+            .single();
+
+        if (!targetUser) {
+            return res.status(404).json({ error: 'Target user not found' });
+        }
+
+        // Update case assignment
+        let updateData = {};
+        switch (role) {
+            case 'forensic_analyst':
+                updateData.assigned_analyst_id = userId;
+                break;
+            case 'legal_professional':
+                updateData.assigned_legal_pro_id = userId;
+                break;
+            case 'court_official':
+                updateData.assigned_court_official_id = userId;
+                break;
+            case 'evidence_manager':
+                updateData.assigned_evidence_manager_id = userId;
+                break;
+            default:
+                return res.status(400).json({ error: 'Invalid role for assignment' });
+        }
+
+        const { data: updatedCase, error } = await supabase
+            .from('cases')
+            .update(updateData)
+            .eq('case_id', caseId)
+            .select()
+            .single();
+
+        if (error) {
+            throw error;
+        }
+
+        // Create assignment record
+        await supabase
+            .from('case_assignments')
+            .insert({
+                case_id: req.caseData.id,
+                assigned_role: role,
+                assigned_user_id: userId,
+                status: 'ACTIVE'
+            });
+
+        // Log assignment
+        await supabase
+            .from('audit_logs')
+            .insert({
+                user_id: user.id,
+                action_type: 'CASE_ASSIGNED',
+                entity_type: 'case',
+                entity_id: req.caseData.id,
+                new_values: { assigned_role: role, assigned_user_id: userId }
+            });
+
+        res.json({ success: true, case: updatedCase });
+    } catch (error) {
+        console.error('Assign case error:', error);
+        res.status(500).json({ error: 'Failed to assign case' });
+    }
+});
+
+// Evidence Management APIs
+
+// Get evidence for a case
+app.get('/api/cases/:caseId/evidence', checkCasePermission, async (req, res) => {
+    try {
+        const { caseId } = req.params;
+
+        const { data: evidence, error } = await supabase
+            .from('evidence')
+            .select(`
+                *,
+                uploaded_by:uploaded_by(full_name),
+                current_holder:current_holder(full_name)
+            `)
+            .eq('case_id', req.caseData.id)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            throw error;
+        }
+
+        res.json({ evidence: evidence || [] });
+    } catch (error) {
+        console.error('Get evidence error:', error);
+        res.status(500).json({ error: 'Failed to get evidence' });
+    }
+});
+
+// Upload evidence
+app.post('/api/cases/:caseId/evidence', checkCasePermission, async (req, res) => {
+    try {
+        const { caseId } = req.params;
+        const { title, description, evidenceType, fileHash, blockchainTxHash } = req.body;
+        const user = req.user;
+
+        // Generate evidence ID
+        const evidenceId = `EVID-${caseId.split('-').pop()}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
+
+        const { data: newEvidence, error } = await supabase
+            .from('evidence')
+            .insert({
+                evidence_id: evidenceId,
+                case_id: req.caseData.id,
+                title,
+                description,
+                evidence_type: evidenceType,
+                file_hash: fileHash,
+                blockchain_tx_hash: blockchainTxHash,
+                uploaded_by: user.id,
+                status: 'UPLOADED'
+            })
+            .select()
+            .single();
+
+        if (error) {
+            throw error;
+        }
+
+        // Log evidence upload
+        await supabase
+            .from('audit_logs')
+            .insert({
+                user_id: user.id,
+                action_type: 'EVIDENCE_UPLOADED',
+                entity_type: 'evidence',
+                entity_id: newEvidence.id,
+                new_values: { evidence_id: evidenceId, title, evidence_type: evidenceType }
+            });
+
+        res.json({ success: true, evidence: newEvidence });
+    } catch (error) {
+        console.error('Upload evidence error:', error);
+        res.status(500).json({ error: 'Failed to upload evidence' });
+    }
+});
+
+// Get dashboard statistics for user
+app.get('/api/dashboard/stats', async (req, res) => {
+    try {
+        const userWallet = req.headers['x-user-wallet'];
+
+        if (!userWallet || !validateWalletAddress(userWallet)) {
+            return res.status(401).json({ error: 'Invalid user wallet' });
+        }
+
+        // Get user info
+        const { data: user } = await supabase
+            .from('users')
+            .select('*')
+            .eq('wallet_address', userWallet)
+            .eq('is_active', true)
+            .single();
+
+        if (!user) {
+            return res.status(401).json({ error: 'User not found or inactive' });
+        }
+
+        let stats = {};
+
+        // Get case counts based on role
+        if (user.role === 'investigator') {
+            const { count: activeCases } = await supabase
+                .from('cases')
+                .select('*', { count: 'exact', head: true })
+                .eq('investigator_id', user.id)
+                .in('status', ['CREATED', 'OPEN', 'ANALYZING']);
+
+            const { count: totalCases } = await supabase
+                .from('cases')
+                .select('*', { count: 'exact', head: true })
+                .eq('investigator_id', user.id);
+
+            stats = {
+                activeCases: activeCases || 0,
+                totalCases: totalCases || 0,
+                pendingAnalysis: 0,
+                awaitingLegal: 0
+            };
+        } else if (user.role === 'forensic_analyst') {
+            const { count: assignedCases } = await supabase
+                .from('cases')
+                .select('*', { count: 'exact', head: true })
+                .eq('assigned_analyst_id', user.id)
+                .eq('status', 'ANALYZING');
+
+            stats = {
+                assignedCases: assignedCases || 0,
+                completedThisMonth: 0
+            };
+        } else if (user.role === 'admin') {
+            const { count: totalUsers } = await supabase
+                .from('users')
+                .select('*', { count: 'exact', head: true })
+                .eq('is_active', true);
+
+            const { count: totalCases } = await supabase
+                .from('cases')
+                .select('*', { count: 'exact', head: true });
+
+            const { count: totalEvidence } = await supabase
+                .from('evidence')
+                .select('*', { count: 'exact', head: true });
+
+            stats = {
+                totalUsers: totalUsers || 0,
+                totalCases: totalCases || 0,
+                totalEvidence: totalEvidence || 0,
+                serverStatus: 'operational'
+            };
+        }
+
+        res.json({ stats });
+    } catch (error) {
+        console.error('Get dashboard stats error:', error);
+        res.status(500).json({ error: 'Failed to get dashboard statistics' });
+    }
+});
+
 // Block unauthorized admin operations
 app.post('/api/admin/*', (req, res) => {
-    res.status(403).json({ 
-        error: 'Forbidden: Administrator privileges required' 
+    res.status(403).json({
+        error: 'Forbidden: Administrator privileges required'
     });
 });
 

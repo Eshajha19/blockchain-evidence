@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔬 Forensic Analyst Dashboard - Evid-DGC</title>
+    <link rel="stylesheet" href="styles.css?v=7">
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
+    <script src="config.js?v=7"></script>
+    <script src="storage.js?v=7"></script>
+    <script src="dashboard-manager.js?v=7"></script>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="dashboard-nav">
+        <div class="container">
+            <div class="nav-content">
+                <a href="index.html" class="nav-brand">🔐 EVID-DGC</a>
+                <div class="nav-items">
+                    <span id="userRole" class="badge badge-forensic">🔬 Forensic Analyst</span>
+                    <span id="userWallet" class="wallet-display">Loading...</span>
+                    <button class="btn btn-outline btn-sm" onclick="logout()">🚪 Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Dashboard Hero -->
+        <div class="dashboard-hero">
+            <h1>🔬 Forensic Analyst Dashboard</h1>
+            <p>Analyze evidence scientifically and create detailed forensic reports</p>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <span class="stat-icon">📋</span>
+                    <span class="stat-text" id="assignedCases">0 Assigned Cases</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="stat-icon">✅</span>
+                    <span class="stat-text" id="completedThisMonth">0 Completed This Month</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="stat-icon">⏰</span>
+                    <span class="stat-text" id="pendingReviews">0 Pending Reviews</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h2>🚀 Quick Actions</h2>
+            </div>
+            <div class="card-body">
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="showAssignedCases()">
+                        📋 Assigned Cases
+                    </button>
+                    <button class="btn btn-outline" onclick="showReports()">
+                        📄 My Reports
+                    </button>
+                    <button class="btn btn-outline" onclick="showAnalysisTools()">
+                        🔬 Analysis Tools
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Analysis -->
+        <div id="pendingAnalysis" class="card">
+            <div class="card-header">
+                <h2>⏳ Pending Analysis</h2>
+            </div>
+            <div class="card-body" id="pendingCasesList">
+                <div class="text-center p-4">
+                    <div class="loading mb-4"></div>
+                    <p>Loading assigned cases...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Tasks -->
+        <div class="card">
+            <div class="card-header">
+                <h2>📝 Current Tasks</h2>
+            </div>
+            <div class="card-body">
+                <div id="currentTasks" class="task-list">
+                    <div class="task-item">
+                        <input type="checkbox" id="task1">
+                        <label for="task1">DNA Analysis - Case #2024-001</label>
+                    </div>
+                    <div class="task-item">
+                        <input type="checkbox" id="task2">
+                        <label for="task2">Fingerprint Report - Case #2024-003</label>
+                    </div>
+                    <div class="task-item">
+                        <input type="checkbox" id="task3">
+                        <label for="task3">Evidence Photography - Case #2024-005</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Reports -->
+        <div class="card">
+            <div class="card-header">
+                <h2>📋 Recent Reports</h2>
+            </div>
+            <div class="card-body">
+                <div id="recentReports" class="reports-list">
+                    <div class="text-center p-4">
+                        <p class="text-muted">No recent reports</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analysis Tools -->
+        <div class="card">
+            <div class="card-header">
+                <h2>🔬 Analysis Tools</h2>
+            </div>
+            <div class="card-body">
+                <div class="tools-grid">
+                    <div class="tool-card" onclick="openImageAnalysis()">
+                        <div class="tool-icon">🖼️</div>
+                        <div class="tool-title">Image Analysis</div>
+                        <div class="tool-description">Examine photos and videos</div>
+                    </div>
+                    <div class="tool-card" onclick="openDocumentAnalysis()">
+                        <div class="tool-icon">📄</div>
+                        <div class="tool-title">Document Analysis</div>
+                        <div class="tool-description">Review documents and files</div>
+                    </div>
+                    <div class="tool-card" onclick="openChainOfCustody()">
+                        <div class="tool-icon">⛓️</div>
+                        <div class="tool-title">Chain of Custody</div>
+                        <div class="tool-description">Verify evidence handling</div>
+                    </div>
+                    <div class="tool-card" onclick="openReportGenerator()">
+                        <div class="tool-icon">📊</div>
+                        <div class="tool-title">Report Generator</div>
+                        <div class="tool-description">Create forensic reports</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Case Analysis Modal -->
+    <div id="analysisModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2 id="analysisModalTitle">Evidence Analysis</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="analysisModalContent" class="modal-body">
+                <!-- Content loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Generator Modal -->
+    <div id="reportModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2>Create Forensic Report</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="reportForm">
+                    <div class="form-group">
+                        <label for="reportCaseId">Case ID *</label>
+                        <select id="reportCaseId" class="form-control" required>
+                            <option value="">Select case</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="reportTitle">Report Title *</label>
+                        <input type="text" id="reportTitle" class="form-control" placeholder="e.g., DNA Analysis Report" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="analysisType">Analysis Type</label>
+                        <select id="analysisType" class="form-control">
+                            <option value="DNA">DNA Analysis</option>
+                            <option value="Fingerprint">Fingerprint Analysis</option>
+                            <option value="Digital">Digital Forensics</option>
+                            <option value="Ballistics">Ballistics Analysis</option>
+                            <option value="Document">Document Examination</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="findings">Findings *</label>
+                        <textarea id="findings" class="form-control" rows="4" placeholder="Detailed analysis findings" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="conclusion">Conclusion *</label>
+                        <textarea id="conclusion" class="form-control" rows="3" placeholder="Analysis conclusion" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="expertOpinion">Expert Opinion</label>
+                        <textarea id="expertOpinion" class="form-control" rows="3" placeholder="Professional opinion"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-success">✅ Submit Report</button>
+                        <button type="button" class="btn btn-outline" onclick="closeModal()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Forensic Analyst-specific dashboard logic
+        let currentUser = null;
+        let assignedCases = [];
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            await initializeAnalystDashboard();
+        });
+
+        async function initializeAnalystDashboard() {
+            try {
+                // Get current user
+                const wallet = localStorage.getItem('currentUser');
+                if (!wallet) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                // Load user data (handle both database and localStorage)
+                let userData = null;
+                try {
+                    const userResponse = await fetch(`/api/user/${wallet}`);
+                    const result = await userResponse.json();
+                    userData = result.user;
+                } catch (error) {
+                    console.log('API not available, checking storage');
+                }
+
+                // Fallback to storage.js
+                if (!userData && typeof storage !== 'undefined') {
+                    try {
+                        userData = await storage.getUser(wallet);
+                    } catch (error) {
+                        console.log('Database not available');
+                    }
+                }
+
+                // Fallback to localStorage
+                if (!userData) {
+                    const savedUser = localStorage.getItem('evidUser_' + wallet);
+                    if (savedUser) {
+                        userData = JSON.parse(savedUser);
+                    }
+                }
+
+                if (!userData) {
+                    alert('User data not found. Please login again.');
+                    logout();
+                    return;
+                }
+
+                // Check role (handle both string and number formats)
+                const userRole = userData.role;
+                if (userRole !== 'forensic_analyst' && userRole !== 3) {
+                    alert('Access denied. Forensic Analyst role required.');
+                    logout();
+                    return;
+                }
+
+                currentUser = userData;
+                updateUserUI(currentUser);
+
+                // Load dashboard data (mock for now)
+                await loadDashboardStats();
+                await loadAssignedCases();
+                await loadRecentReports();
+                await populateCaseSelector();
+
+            } catch (error) {
+                console.error('Dashboard initialization error:', error);
+                alert('Failed to load dashboard. Please try again.');
+            }
+        }
+
+        function updateUserUI(user) {
+            const isTestUser = localStorage.getItem('testUserMode') === 'true';
+            const userName = user.full_name || 'Forensic Analyst';
+            
+            document.getElementById('userRole').textContent = isTestUser ? `🔬 ${userName} (Test)` : `🔬 ${userName}`;
+            document.getElementById('userWallet').textContent = `${user.wallet_address.slice(0, 6)}...${user.wallet_address.slice(-4)}`;
+        }
+
+        async function loadDashboardStats() {
+            try {
+                // Mock stats for demo
+                const mockStats = {
+                    assignedCases: 2,
+                    completedThisMonth: 5,
+                    pendingReviews: 1
+                };
+
+                document.getElementById('assignedCases').textContent = `${mockStats.assignedCases} Assigned Cases`;
+                document.getElementById('completedThisMonth').textContent = `${mockStats.completedThisMonth} Completed This Month`;
+                document.getElementById('pendingReviews').textContent = `${mockStats.pendingReviews} Pending Reviews`;
+            } catch (error) {
+                console.error('Stats loading error:', error);
+            }
+        }
+
+        async function loadAssignedCases() {
+            try {
+                // Mock assigned cases for demo
+                const mockCases = [
+                    {
+                        case_id: 'CASE-2024-001',
+                        title: 'DNA Analysis Required',
+                        status: 'ANALYZING',
+                        created_at: new Date().toISOString()
+                    },
+                    {
+                        case_id: 'CASE-2024-003',
+                        title: 'Digital Evidence Review',
+                        status: 'ANALYZING', 
+                        created_at: new Date(Date.now() - 86400000).toISOString()
+                    }
+                ];
+                
+                assignedCases = mockCases;
+                renderAssignedCases(assignedCases);
+            } catch (error) {
+                console.error('Cases loading error:', error);
+                document.getElementById('pendingCasesList').innerHTML = '<p class="text-center text-muted">Failed to load cases</p>';
+            }
+        }
+
+        function renderAssignedCases(cases) {
+            const container = document.getElementById('pendingCasesList');
+
+            if (cases.length === 0) {
+                container.innerHTML = '<p class="text-center text-muted">No cases assigned for analysis</p>';
+                return;
+            }
+
+            const casesHtml = cases.map(caseItem => `
+                <div class="case-analysis-card">
+                    <div class="case-header">
+                        <h3>${caseItem.title}</h3>
+                        <span class="badge badge-${getStatusClass(caseItem.status)}">${caseItem.status}</span>
+                    </div>
+                    <div class="case-meta">
+                        <span>📅 ${new Date(caseItem.created_at).toLocaleDateString()}</span>
+                        <span>🏷️ ${caseItem.case_id}</span>
+                    </div>
+                    <div class="evidence-count">
+                        <span>📁 Evidence: Loading...</span>
+                    </div>
+                    <div class="case-actions">
+                        <button class="btn btn-sm btn-primary" onclick="analyzeCase('${caseItem.case_id}')">
+                            🔬 Analyze Evidence
+                        </button>
+                        <button class="btn btn-sm btn-outline" onclick="createReport('${caseItem.case_id}')">
+                            📄 Create Report
+                        </button>
+                        <button class="btn btn-sm btn-outline" onclick="viewCaseDetails('${caseItem.case_id}')">
+                            👁️ View Details
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = casesHtml;
+        }
+
+        async function loadRecentReports() {
+            // Mock data for now - in real implementation, fetch from API
+            const reports = [
+                { title: 'DNA Analysis Report - Case #2024-002', date: '2024-12-20', status: 'Completed' },
+                { title: 'Fingerprint Report - Case #2024-004', date: '2024-12-18', status: 'Completed' }
+            ];
+
+            const reportsHtml = reports.map(report => `
+                <div class="report-item">
+                    <div class="report-icon">📄</div>
+                    <div class="report-content">
+                        <h4>${report.title}</h4>
+                        <p>Completed: ${report.date}</p>
+                    </div>
+                    <button class="btn btn-sm btn-outline">View</button>
+                </div>
+            `).join('');
+
+            document.getElementById('recentReports').innerHTML = reportsHtml;
+        }
+
+        async function populateCaseSelector() {
+            const select = document.getElementById('reportCaseId');
+            select.innerHTML = '<option value="">Select case</option>';
+
+            assignedCases.forEach(caseItem => {
+                const option = document.createElement('option');
+                option.value = caseItem.case_id;
+                option.textContent = `${caseItem.case_id} - ${caseItem.title}`;
+                select.appendChild(option);
+            });
+        }
+
+        function showAssignedCases() {
+            document.getElementById('pendingAnalysis').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showReports() {
+            alert('Reports view coming soon!');
+        }
+
+        function showAnalysisTools() {
+            document.querySelector('.tools-grid').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function analyzeCase(caseId) {
+            document.getElementById('analysisModalTitle').textContent = `Evidence Analysis - ${caseId}`;
+            document.getElementById('analysisModal').classList.add('active');
+
+            // Load case evidence for analysis
+            loadCaseEvidenceForAnalysis(caseId);
+        }
+
+        async function loadCaseEvidenceForAnalysis(caseId) {
+            try {
+                const response = await fetch(`/api/cases/${caseId}/evidence`, {
+                    headers: { 'x-user-wallet': currentUser.wallet_address }
+                });
+                const data = await response.json();
+
+                const evidenceHtml = data.evidence.map(item => `
+                    <div class="evidence-analysis-item">
+                        <h4>${item.title}</h4>
+                        <p>${item.description}</p>
+                        <div class="evidence-actions">
+                            <button class="btn btn-sm btn-outline" onclick="examineEvidence('${item.evidence_id}')">
+                                🔍 Examine
+                            </button>
+                            <button class="btn btn-sm btn-outline" onclick="addAnnotation('${item.evidence_id}')">
+                                📝 Annotate
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+
+                document.getElementById('analysisModalContent').innerHTML = `
+                    <div class="evidence-analysis-list">
+                        ${evidenceHtml}
+                    </div>
+                    <div class="analysis-actions">
+                        <button class="btn btn-success" onclick="completeAnalysis('${caseId}')">
+                            ✅ Complete Analysis
+                        </button>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Evidence loading error:', error);
+                document.getElementById('analysisModalContent').innerHTML = '<p class="text-center text-muted">Failed to load evidence</p>';
+            }
+        }
+
+        function createReport(caseId) {
+            document.getElementById('reportCaseId').value = caseId;
+            document.getElementById('reportModal').classList.add('active');
+        }
+
+        function viewCaseDetails(caseId) {
+            window.location.href = `case-detail.html?caseId=${caseId}`;
+        }
+
+        function openImageAnalysis() {
+            alert('Image analysis tool coming soon!');
+        }
+
+        function openDocumentAnalysis() {
+            alert('Document analysis tool coming soon!');
+        }
+
+        function openChainOfCustody() {
+            alert('Chain of custody verification tool coming soon!');
+        }
+
+        function openReportGenerator() {
+            document.getElementById('reportModal').classList.add('active');
+        }
+
+        function examineEvidence(evidenceId) {
+            alert(`Examining evidence ${evidenceId} - detailed analysis interface coming soon!`);
+        }
+
+        function addAnnotation(evidenceId) {
+            alert(`Adding annotation to evidence ${evidenceId} - annotation interface coming soon!`);
+        }
+
+        function completeAnalysis(caseId) {
+            alert(`Analysis completed for case ${caseId} - status will be updated!`);
+            closeModal();
+        }
+
+        function getStatusClass(status) {
+            const classes = {
+                'CREATED': 'secondary',
+                'OPEN': 'primary',
+                'ANALYZING': 'warning',
+                'LEGAL_REVIEW': 'info',
+                'APPROVED': 'success',
+                'IN_CUSTODY': 'secondary',
+                'READY_TRIAL': 'warning',
+                'IN_TRIAL': 'danger',
+                'CLOSED': 'dark'
+            };
+            return classes[status] || 'secondary';
+        }
+
+        function closeModal() {
+            document.querySelectorAll('.modal').forEach(modal => modal.classList.remove('active'));
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+
+        // Report form submission
+        document.getElementById('reportForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = {
+                caseId: document.getElementById('reportCaseId').value,
+                title: document.getElementById('reportTitle').value,
+                analysisType: document.getElementById('analysisType').value,
+                findings: document.getElementById('findings').value,
+                conclusion: document.getElementById('conclusion').value,
+                expertOpinion: document.getElementById('expertOpinion').value
+            };
+
+            try {
+                // In a real implementation, this would submit to an API endpoint
+                alert('Report submitted successfully! (Mock implementation)');
+
+                // Reset form and close modal
+                this.reset();
+                closeModal();
+
+                // Refresh dashboard data
+                await loadDashboardStats();
+                await loadRecentReports();
+
+            } catch (error) {
+                console.error('Report submission error:', error);
+                alert('Failed to submit report. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -286,7 +286,49 @@ function getFormData() {
 
 async function goToDashboard() {
     localStorage.setItem('currentUser', userAccount);
-    window.location.href = 'dashboard.html';
+
+    // Get user role to redirect to appropriate dashboard
+    try {
+        const userResponse = await fetch(`/api/user/${userAccount}`);
+        const userData = await userResponse.json();
+
+        if (userData.user) {
+            const role = userData.user.role;
+            switch (role) {
+                case 'investigator':
+                    window.location.href = 'dashboard-investigator.html';
+                    break;
+                case 'forensic_analyst':
+                    window.location.href = 'dashboard-analyst.html';
+                    break;
+                case 'legal_professional':
+                    window.location.href = 'dashboard-legal.html';
+                    break;
+                case 'court_official':
+                    window.location.href = 'dashboard-court.html';
+                    break;
+                case 'evidence_manager':
+                    window.location.href = 'dashboard-manager.html';
+                    break;
+                case 'auditor':
+                    window.location.href = 'dashboard-auditor.html';
+                    break;
+                case 'admin':
+                    window.location.href = 'admin.html';
+                    break;
+                case 'public_viewer':
+                    window.location.href = 'dashboard-public.html';
+                    break;
+                default:
+                    window.location.href = 'dashboard.html'; // Fallback
+            }
+        } else {
+            window.location.href = 'dashboard.html'; // Fallback
+        }
+    } catch (error) {
+        console.error('Error determining dashboard:', error);
+        window.location.href = 'dashboard.html'; // Fallback
+    }
 }
 
 async function goToAdminDashboard() {

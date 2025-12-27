@@ -1,15 +1,15 @@
--- Enhanced Database Schema for EVID-DGC with Admin Management
+-- EVID-DGC Admin Management Database Schema
 -- Run this in Supabase SQL Editor
 
--- Users table with enhanced security
+-- Users table with role-based access
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     wallet_address TEXT UNIQUE NOT NULL,
     full_name TEXT NOT NULL,
     role TEXT NOT NULL CHECK (role IN ('public_viewer', 'investigator', 'forensic_analyst', 'legal_professional', 'court_official', 'evidence_manager', 'auditor', 'admin')),
     department TEXT,
-    badge_number TEXT,
     jurisdiction TEXT,
+    badge_number TEXT,
     account_type TEXT DEFAULT 'real' CHECK (account_type IN ('real', 'test')),
     created_by TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -71,7 +71,7 @@ ALTER TABLE cases ENABLE ROW LEVEL SECURITY;
 ALTER TABLE activity_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE admin_actions ENABLE ROW LEVEL SECURITY;
 
--- Create policies (allow all for demo) - Drop if exists first
+-- Create policies (allow all for demo)
 DROP POLICY IF EXISTS "Allow all operations" ON users;
 DROP POLICY IF EXISTS "Allow all operations" ON evidence;
 DROP POLICY IF EXISTS "Allow all operations" ON cases;
@@ -89,3 +89,4 @@ CREATE INDEX IF NOT EXISTS idx_users_wallet ON users(wallet_address);
 CREATE INDEX IF NOT EXISTS idx_evidence_case ON evidence(case_id);
 CREATE INDEX IF NOT EXISTS idx_evidence_submitted ON evidence(submitted_by);
 CREATE INDEX IF NOT EXISTS idx_activity_user ON activity_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_admin_actions_admin ON admin_actions(admin_wallet);

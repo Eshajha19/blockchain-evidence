@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👁️ Public Viewer Dashboard - EVID-DGC</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="dashboard-nav">
+        <div class="container">
+            <div class="nav-content">
+                <a href="index.html" class="nav-brand">🔐 EVID-DGC</a>
+                <div class="nav-items">
+                    <span id="userRole" class="badge badge-public">👁️ Public Viewer</span>
+                    <span id="userWallet" class="wallet-display">Loading...</span>
+                    <button class="btn btn-outline btn-sm" onclick="logout()">🚪 Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="dashboard-hero">
+            <h1>👁️ Public Viewer Dashboard</h1>
+            <p>View public cases and evidence information</p>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <span class="stat-icon">📁</span>
+                    <span class="stat-text" id="publicCases">0 Public Cases</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="stat-icon">📋</span>
+                    <span class="stat-text" id="publicEvidence">0 Public Evidence</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>🔍 Search Public Cases</h2>
+            </div>
+            <div class="card-body">
+                <div class="search-input-group">
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search public cases...">
+                    <button class="btn btn-primary" onclick="searchCases()">🔍 Search</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>📋 Public Cases</h2>
+            </div>
+            <div class="card-body">
+                <div id="publicCasesList">
+                    <div class="text-center p-4">
+                        <div class="loading mb-4"></div>
+                        <p>Loading public cases...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="storage.js"></script>
+    <script>
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            await initializePublicDashboard();
+        });
+
+        async function initializePublicDashboard() {
+            try {
+                const wallet = localStorage.getItem('currentUser');
+                if (!wallet) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                // Load user data
+                currentUser = await loadUserData(wallet);
+                if (!currentUser) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                updateUserUI(currentUser);
+                await loadPublicCases();
+            } catch (error) {
+                console.error('Dashboard initialization error:', error);
+            }
+        }
+
+        async function loadUserData(wallet) {
+            try {
+                const user = await storage.getUser(wallet);
+                if (user) return user;
+
+                const savedUser = localStorage.getItem('evidUser_' + wallet);
+                return savedUser ? JSON.parse(savedUser) : null;
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                return null;
+            }
+        }
+
+        function updateUserUI(user) {
+            const isTestUser = localStorage.getItem('testUserMode') === 'true';
+            const roleName = getRoleName(user.role);
+            
+            document.getElementById('userRole').textContent = isTestUser ? `👁️ ${roleName} (Test)` : `👁️ ${roleName}`;
+            document.getElementById('userWallet').textContent = user.wallet_address.substring(0, 8) + '...';
+        }
+
+        async function loadPublicCases() {
+            try {
+                // Mock data for public cases
+                const publicCases = [
+                    { id: 1, title: 'Public Safety Case #001', status: 'CLOSED', date: '2024-12-15' },
+                    { id: 2, title: 'Traffic Incident #002', status: 'CLOSED', date: '2024-12-10' }
+                ];
+
+                document.getElementById('publicCases').textContent = `${publicCases.length} Public Cases`;
+                document.getElementById('publicEvidence').textContent = `${publicCases.length * 2} Public Evidence`;
+
+                const casesHtml = publicCases.map(caseItem => `
+                    <div class="case-card">
+                        <div class="case-header">
+                            <h3>${caseItem.title}</h3>
+                            <span class="badge badge-success">${caseItem.status}</span>
+                        </div>
+                        <div class="case-meta">
+                            <span>📅 ${caseItem.date}</span>
+                        </div>
+                        <div class="case-actions">
+                            <button class="btn btn-sm btn-outline" onclick="viewCase(${caseItem.id})">
+                                👁️ View Details
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+
+                document.getElementById('publicCasesList').innerHTML = casesHtml;
+            } catch (error) {
+                console.error('Error loading public cases:', error);
+                document.getElementById('publicCasesList').innerHTML = '<p class="text-center text-muted">Error loading cases</p>';
+            }
+        }
+
+        function searchCases() {
+            const searchTerm = document.getElementById('searchInput').value;
+            alert(`Searching for: ${searchTerm} (Search functionality coming soon!)`);
+        }
+
+        function viewCase(caseId) {
+            alert(`Viewing case ${caseId} details (Case detail view coming soon!)`);
+        }
+
+        function getRoleName(role) {
+            const roleMap = {
+                'public_viewer': 'Public Viewer',
+                'investigator': 'Investigator', 
+                'forensic_analyst': 'Forensic Analyst',
+                'legal_professional': 'Legal Professional',
+                'court_official': 'Court Official',
+                'evidence_manager': 'Evidence Manager',
+                'auditor': 'Auditor',
+                'admin': 'Administrator',
+                1: 'Public Viewer', 2: 'Investigator', 3: 'Forensic Analyst',
+                4: 'Legal Professional', 5: 'Court Official', 6: 'Evidence Manager',
+                7: 'Auditor', 8: 'Administrator'
+            };
+            return roleMap[role] || 'Unknown';
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.replace('index.html');
+        }
+    </script>
+</body>
+</html>

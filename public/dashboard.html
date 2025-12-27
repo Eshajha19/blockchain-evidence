@@ -3,215 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📋 Evidence Dashboard - Evid-DGC</title>
+    <title>🔐 EVID-DGC Dashboard</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <nav class="dashboard-nav">
-        <div class="container">
-            <div class="nav-content">
-                <a href="index.html" class="nav-brand">🔐 EVID-DGC</a>
-                <div class="nav-items">
-                    <span id="userRole" class="badge">Loading...</span>
-                    <span id="userWallet" class="wallet-display">Loading...</span>
-                    <button class="btn btn-outline btn-sm" onclick="logout()">🚪 Logout</button>
-                </div>
-            </div>
-        </div>
-    </nav>
-
     <div class="container">
-        <!-- Dashboard Hero -->
-        <div class="dashboard-hero">
-            <h1>📋 Evidence Management Dashboard</h1>
-            <p>Upload, manage, and track evidence with blockchain verification</p>
-            <div class="hero-stats">
-                <div class="hero-stat">
-                    <span class="stat-icon">📁</span>
-                    <span class="stat-text" id="totalEvidence">0 Evidence Items</span>
-                </div>
-                <div class="hero-stat">
-                    <span class="stat-icon">🔗</span>
-                    <span class="stat-text" id="blockchainStatus">Blockchain Ready</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="card">
-            <div class="card-header">
-                <h2>🚀 Quick Actions</h2>
-            </div>
-            <div class="card-body">
-                <div class="btn-group">
-                    <button class="btn btn-primary" onclick="showUploadForm()">
-                        📤 Upload Evidence
-                    </button>
-                    <button class="btn btn-outline" onclick="showSearchForm()">
-                        🔍 Search Evidence
-                    </button>
-                    <button class="btn btn-outline" onclick="exportData()">
-                        📊 Export Data
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Evidence Upload Form -->
-        <div id="uploadFormContainer" class="card hidden">
-            <div class="card-header">
-                <h2>📤 Upload New Evidence</h2>
-                <button class="btn btn-outline btn-sm" onclick="hideUploadForm()">✕ Close</button>
-            </div>
-            <div class="card-body">
-                <form id="evidenceUploadForm">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="caseId">🗂️ Case ID *</label>
-                            <input type="text" id="caseId" name="caseId" class="form-control" 
-                                   placeholder="Enter case ID (e.g., CASE-2024-001)" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="evidenceTitle">📝 Evidence Title *</label>
-                            <input type="text" id="evidenceTitle" name="title" class="form-control" 
-                                   placeholder="Brief description of evidence" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="evidenceDescription">📄 Description</label>
-                        <textarea id="evidenceDescription" name="description" class="form-control" 
-                                  placeholder="Detailed description of the evidence" rows="3"></textarea>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="evidenceType">🏷️ Evidence Type *</label>
-                            <select id="evidenceType" name="type" class="form-control" required>
-                                <option value="">Select type</option>
-                                <option value="Physical">Physical Evidence</option>
-                                <option value="Digital">Digital Evidence</option>
-                                <option value="Document">Document</option>
-                                <option value="Photo">Photograph</option>
-                                <option value="Video">Video Recording</option>
-                                <option value="Audio">Audio Recording</option>
-                                <option value="Forensic">Forensic Analysis</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="evidenceFile">📎 Upload File *</label>
-                            <input type="file" id="evidenceFile" class="form-control" 
-                                   accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt" required>
-                        </div>
-                    </div>
-                    
-                    <div id="filePreview" class="mb-4"></div>
-                    
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-success">
-                            ✅ Submit Evidence
-                        </button>
-                        <button type="button" class="btn btn-outline" onclick="resetForm()">
-                            🔄 Reset Form
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Search Interface -->
-        <div id="searchContainer" class="search-container hidden">
-            <div class="search-header">
-                <h2>🔍 Search Evidence</h2>
-                <button class="btn btn-outline btn-sm" onclick="hideSearchForm()">✕ Close</button>
-            </div>
-            <div class="search-input-group">
-                <span class="search-icon">🔍</span>
-                <input type="text" id="searchInput" class="search-input" 
-                       placeholder="Search by title, case ID, or description...">
-            </div>
-            <div class="filter-grid">
-                <div class="filter-group">
-                    <label class="filter-label">Status</label>
-                    <select id="statusFilter" class="filter-select">
-                        <option value="">All Status</option>
-                        <option value="pending">Pending</option>
-                        <option value="approved">Approved</option>
-                        <option value="rejected">Rejected</option>
-                        <option value="under_review">Under Review</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label class="filter-label">Type</label>
-                    <select id="typeFilter" class="filter-select">
-                        <option value="">All Types</option>
-                        <option value="Physical">Physical</option>
-                        <option value="Digital">Digital</option>
-                        <option value="Document">Document</option>
-                        <option value="Photo">Photo</option>
-                        <option value="Video">Video</option>
-                        <option value="Audio">Audio</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label class="filter-label">Date From</label>
-                    <input type="date" id="startDate" class="filter-input">
-                </div>
-                <div class="filter-group">
-                    <label class="filter-label">Date To</label>
-                    <input type="date" id="endDate" class="filter-input">
-                </div>
-            </div>
-            <div class="filter-actions">
-                <button class="btn btn-primary" onclick="performSearch()">🔍 Search</button>
-                <button class="btn btn-outline" onclick="clearFilters()">🗑️ Clear</button>
-            </div>
-        </div>
-
-        <!-- Results Header -->
-        <div class="results-header">
-            <div class="results-count" id="resultsCount">Loading evidence...</div>
-            <div class="sort-controls">
-                <label class="sort-label">Sort by:</label>
-                <select id="sortBy" class="filter-select">
-                    <option value="timestamp">Date</option>
-                    <option value="title">Title</option>
-                    <option value="type">Type</option>
-                    <option value="status">Status</option>
-                </select>
-                <select id="sortOrder" class="filter-select">
-                    <option value="desc">Newest First</option>
-                    <option value="asc">Oldest First</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- Evidence List -->
-        <div id="evidenceList" class="evidence-grid">
-            <div class="text-center p-8">
-                <div class="loading mb-4"></div>
-                <p>Loading evidence...</p>
-            </div>
+        <div class="text-center p-8">
+            <div class="loading mb-4"></div>
+            <h2>🔄 Redirecting to your dashboard...</h2>
+            <p>Please wait while we load your role-specific interface.</p>
         </div>
     </div>
 
-    <!-- Evidence Detail Modal -->
-    <div id="evidenceModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalTitle">Evidence Details</h2>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
-            </div>
-            <div id="modalContent" class="modal-body">
-                <!-- Content loaded dynamically -->
-            </div>
-        </div>
-    </div>
+    <script src="config.js"></script>
+    <script src="storage.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            await routeToRoleDashboard();
+        });
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
-    <script src="config.js?v=4"></script>
-    <script src="storage.js?v=4"></script>
-    <script src="dashboard-manager.js?v=4"></script>
+        async function routeToRoleDashboard() {
+            try {
+                const userAccount = localStorage.getItem('currentUser');
+                console.log('Dashboard router - userAccount:', userAccount);
+                
+                if (!userAccount) {
+                    console.log('No user account found, redirecting to index');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                // Get user data
+                let userInfo = null;
+                
+                // Try database first
+                if (typeof storage !== 'undefined') {
+                    try {
+                        userInfo = await storage.getUser(userAccount);
+                        console.log('User info from database:', userInfo);
+                    } catch (error) {
+                        console.log('Database not available, checking localStorage');
+                    }
+                }
+
+                // Fallback to localStorage
+                if (!userInfo) {
+                    const savedUser = localStorage.getItem('evidUser_' + userAccount);
+                    if (savedUser) {
+                        userInfo = JSON.parse(savedUser);
+                        console.log('User info from localStorage:', userInfo);
+                    }
+                }
+
+                if (!userInfo) {
+                    console.log('No user info found, redirecting to index');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                // Route based on role
+                const role = userInfo.role;
+                console.log('User role:', role);
+                let dashboardUrl = 'dashboard-public.html'; // default
+
+                switch (role) {
+                    case 'admin':
+                    case 8:
+                        dashboardUrl = 'admin.html';
+                        break;
+                    case 'investigator':
+                    case 2:
+                        dashboardUrl = 'dashboard-investigator.html';
+                        break;
+                    case 'forensic_analyst':
+                    case 3:
+                        dashboardUrl = 'dashboard-analyst.html';
+                        break;
+                    case 'legal_professional':
+                    case 4:
+                        dashboardUrl = 'dashboard-legal.html';
+                        break;
+                    case 'court_official':
+                    case 5:
+                        dashboardUrl = 'dashboard-court.html';
+                        break;
+                    case 'evidence_manager':
+                    case 6:
+                        dashboardUrl = 'dashboard-manager.html';
+                        break;
+                    case 'auditor':
+                    case 7:
+                        dashboardUrl = 'dashboard-auditor.html';
+                        break;
+                    case 'public_viewer':
+                    case 1:
+                    default:
+                        dashboardUrl = 'dashboard-public.html';
+                        break;
+                }
+
+                console.log(`Redirecting ${role} to ${dashboardUrl}`);
+                
+                // Add a small delay to ensure the redirect is visible
+                setTimeout(() => {
+                    window.location.href = dashboardUrl;
+                }, 500);
+
+            } catch (error) {
+                console.error('Dashboard routing error:', error);
+                alert('Error loading dashboard. Please try logging in again.');
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
 </body>
 </html>
