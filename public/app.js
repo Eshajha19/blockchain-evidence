@@ -89,7 +89,7 @@ async function checkRegistrationStatus() {
             return;
         }
         
-        // Check database for user
+        // Check database for user first (primary source)
         let userInfo = null;
         if (typeof storage !== 'undefined') {
             try {
@@ -99,32 +99,52 @@ async function checkRegistrationStatus() {
             }
         }
         
-        // Fallback to localStorage
-        if (!userInfo) {
-            const savedUser = localStorage.getItem('evidUser_' + userAccount);
-            if (savedUser) {
-                userInfo = JSON.parse(savedUser);
-            }
-        }
-        
+        // If user found in database
         if (userInfo) {
+            // Check if user is inactive
+            if (!userInfo.is_active) {
+                showAlert('Your account has been deactivated. Contact administrator.', 'error');
+                logout();
+                return;
+            }
+            
             // Check if user is admin
-            if (userInfo.role === 'admin' || userInfo.role === 8) {
+            if (userInfo.role === 'admin') {
                 localStorage.setItem('currentUser', userAccount);
                 window.location.href = 'admin.html';
                 return;
             }
             
+            // Regular user - show dashboard access
             updateUserUI(userInfo);
             toggleSections('alreadyRegistered');
             return;
         }
         
-        // New wallet - show registration
+        // Fallback to localStorage for existing users (backward compatibility)
+        const savedUser = localStorage.getItem('evidUser_' + userAccount);
+        if (savedUser) {
+            const localUserInfo = JSON.parse(savedUser);
+            
+            // Check if it's an admin in localStorage
+            if (localUserInfo.role === 8 || localUserInfo.role === 'admin') {
+                localStorage.setItem('currentUser', userAccount);
+                window.location.href = 'admin.html';
+                return;
+            }
+            
+            updateUserUI(localUserInfo);
+            toggleSections('alreadyRegistered');
+            return;
+        }
+        
+        // New wallet - show registration form
         toggleSections('registration');
+        
     } catch (error) {
         console.error('Registration check error:', error);
         showAlert('Error checking registration. Please try again.', 'error');
+        // On error, show registration form
         toggleSections('registration');
     }
 }
@@ -259,12 +279,7 @@ function getRoleClass(role) {
 
 function logout() {
     // Clear all stored data
-    localStorage.removeItem('currentUser');
-    Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('evidUser_')) {
-            localStorage.removeItem(key);
-        }
-    });
+    localStorage.clear();
     
     // Reset UI
     userAccount = null;
@@ -278,7 +293,8 @@ function logout() {
     toggleSections('wallet');
     document.getElementById('walletStatus')?.classList.add('hidden');
     
-    showAlert('Logged out successfully. Connect wallet to login again.', 'success');
+    // Force page reload to ensure clean state
+    window.location.replace('index.html');
 }
 
 function showLoading(show) {

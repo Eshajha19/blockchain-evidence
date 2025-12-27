@@ -1,21 +1,31 @@
 {
   "name": "evid-dgc",
   "version": "2.0.0",
-  "description": "Modern blockchain evidence management system with 3D UI",
-  "main": "public/index.html",
+  "description": "Modern blockchain evidence management system with admin controls",
+  "main": "server.js",
   "scripts": {
-    "start": "http-server public -p 8080 -o",
-    "dev": "http-server public -p 8080"
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "frontend": "http-server public -p 8080",
+    "build": "echo 'No build step required'"
   },
-  "keywords": ["blockchain", "evidence", "3d-ui", "modern"],
+  "keywords": ["blockchain", "evidence", "admin", "security", "supabase"],
   "author": "EVID-DGC Team",
   "license": "MIT",
   "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "@supabase/supabase-js": "^2.39.0",
+    "express-rate-limit": "^7.1.5",
     "truffle": "^5.8.0",
     "web3": "^1.8.0",
     "@truffle/hdwallet-provider": "^2.1.0"
   },
   "devDependencies": {
-    "http-server": "^14.1.1"
+    "http-server": "^14.1.1",
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }

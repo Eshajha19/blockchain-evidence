@@ -22,10 +22,27 @@ class DashboardManager {
             return;
         }
         this.userAccount = userAccount;
+        
+        // Check if this is a test user session
+        const isTestUser = localStorage.getItem('testUserMode') === 'true';
+        if (isTestUser) {
+            console.log('Test user session detected');
+            this.isTestUser = true;
+        }
     }
 
     async loadUserData() {
         try {
+            // For test users, get data from database
+            if (this.isTestUser) {
+                this.currentUser = await storage.getUser(this.userAccount);
+                if (this.currentUser) {
+                    console.log('Test user data loaded from database:', this.currentUser);
+                    return;
+                }
+            }
+            
+            // Regular user flow
             this.currentUser = await storage.getUser(this.userAccount);
             if (!this.currentUser) {
                 // Fallback to localStorage
@@ -89,12 +106,14 @@ class DashboardManager {
         const userWallet = document.getElementById('userWallet');
         
         if (userRole && this.currentUser) {
-            userRole.textContent = this.getRoleName(this.currentUser.role);
+            const roleName = this.getRoleName(this.currentUser.role);
+            userRole.textContent = this.isTestUser ? `🧪 ${roleName} (Test)` : roleName;
             userRole.className = `badge badge-${this.getRoleClass(this.currentUser.role)}`;
         }
         
         if (userWallet) {
-            userWallet.textContent = this.userAccount.substring(0, 8) + '...';
+            const walletDisplay = this.userAccount.substring(0, 8) + '...';
+            userWallet.textContent = this.isTestUser ? `${walletDisplay} (Test)` : walletDisplay;
         }
     }
 
@@ -576,8 +595,11 @@ class DashboardManager {
     }
 
     logout() {
-        localStorage.removeItem('currentUser');
-        window.location.href = 'index.html';
+        // Clear all localStorage data
+        localStorage.clear();
+        
+        // Force redirect
+        window.location.replace('index.html');
     }
 
     // Utility Functions
@@ -606,20 +628,38 @@ class DashboardManager {
     }
 
     getRoleName(role) {
-        const roles = {
+        // Handle both string and number role formats
+        const roleMap = {
+            'public_viewer': 'Public Viewer',
+            'investigator': 'Investigator', 
+            'forensic_analyst': 'Forensic Analyst',
+            'legal_professional': 'Legal Professional',
+            'court_official': 'Court Official',
+            'evidence_manager': 'Evidence Manager',
+            'auditor': 'Auditor',
+            'admin': 'Administrator',
             1: 'Public Viewer', 2: 'Investigator', 3: 'Forensic Analyst',
             4: 'Legal Professional', 5: 'Court Official', 6: 'Evidence Manager',
             7: 'Auditor', 8: 'Administrator'
         };
-        return roles[role] || 'Unknown';
+        return roleMap[role] || 'Unknown';
     }
 
     getRoleClass(role) {
-        const classes = {
+        // Handle both string and number role formats
+        const classMap = {
+            'public_viewer': 'public',
+            'investigator': 'investigator', 
+            'forensic_analyst': 'forensic',
+            'legal_professional': 'legal',
+            'court_official': 'court',
+            'evidence_manager': 'manager',
+            'auditor': 'auditor',
+            'admin': 'admin',
             1: 'public', 2: 'investigator', 3: 'forensic', 4: 'legal',
             5: 'court', 6: 'manager', 7: 'auditor', 8: 'admin'
         };
-        return classes[role] || 'public';
+        return classMap[role] || 'public';
     }
 
     getStatusClass(status) {

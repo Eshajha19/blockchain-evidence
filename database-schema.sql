@@ -1,16 +1,16 @@
--- Minimal Database Schema for EVID-DGC
+-- Enhanced Database Schema for EVID-DGC with Admin Management
 -- Run this in Supabase SQL Editor
 
--- Users table
+-- Users table with enhanced security
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     wallet_address TEXT UNIQUE NOT NULL,
     full_name TEXT NOT NULL,
-    role TEXT NOT NULL,
+    role TEXT NOT NULL CHECK (role IN ('public_viewer', 'investigator', 'forensic_analyst', 'legal_professional', 'court_official', 'evidence_manager', 'auditor', 'admin')),
     department TEXT,
     badge_number TEXT,
     jurisdiction TEXT,
-    account_type TEXT DEFAULT 'real',
+    account_type TEXT DEFAULT 'real' CHECK (account_type IN ('real', 'test')),
     created_by TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     last_updated TIMESTAMPTZ DEFAULT NOW(),

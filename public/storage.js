@@ -9,9 +9,20 @@ class Storage {
         };
     }
 
-    // User Management
+    // Enhanced User Management with Security
     async saveUser(userData) {
         try {
+            // Validate role
+            const allowedRoles = ['public_viewer', 'investigator', 'forensic_analyst', 'legal_professional', 'court_official', 'evidence_manager', 'auditor', 'admin'];
+            if (!allowedRoles.includes(userData.role)) {
+                throw new Error('Invalid role specified');
+            }
+
+            // Prevent self-registration as admin (only if createdBy is 'self')
+            if (userData.role === 'admin' && userData.createdBy === 'self') {
+                throw new Error('Administrator role cannot be self-registered');
+            }
+
             const response = await fetch(`${this.apiUrl}/users`, {
                 method: 'POST',
                 headers: this.headers,
@@ -32,12 +43,13 @@ class Storage {
                 console.log('User saved to database successfully');
                 return true;
             } else {
-                console.error('Database save failed, using localStorage fallback');
-                return false;
+                const error = await response.json();
+                console.error('Database save failed:', error);
+                return false; // Allow fallback to localStorage
             }
         } catch (error) {
             console.error('Database connection error:', error);
-            return false;
+            return false; // Allow fallback to localStorage
         }
     }
 
@@ -63,6 +75,65 @@ class Storage {
         }
     }
 
+    // Regular User Creation (Admin-Only)
+    async createRegularUser(adminWallet, userData) {
+        try {
+            // Verify the requesting user is actually an admin
+            const requestingUser = await this.getUser(adminWallet);
+            if (!requestingUser || requestingUser.role !== 'admin' || !requestingUser.is_active) {
+                throw new Error('Unauthorized: Only active administrators can create user accounts');
+            }
+
+            // Validate role (cannot be admin)
+            const allowedRoles = ['public_viewer', 'investigator', 'forensic_analyst', 'legal_professional', 'court_official', 'evidence_manager', 'auditor'];
+            if (!allowedRoles.includes(userData.role)) {
+                throw new Error('Invalid role specified for regular user');
+            }
+
+            // Validate wallet address format
+            if (!userData.walletAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
+                throw new Error('Invalid wallet address format');
+            }
+
+            // Check if wallet already exists
+            const existingUser = await this.getUser(userData.walletAddress);
+            if (existingUser) {
+                throw new Error('Wallet address already registered');
+            }
+
+            const response = await fetch(`${this.apiUrl}/users`, {
+                method: 'POST',
+                headers: this.headers,
+                body: JSON.stringify({
+                    wallet_address: userData.walletAddress,
+                    full_name: userData.fullName,
+                    role: userData.role,
+                    department: userData.department || 'General',
+                    jurisdiction: userData.jurisdiction || 'General',
+                    badge_number: userData.badgeNumber || '',
+                    account_type: 'real',
+                    created_by: adminWallet,
+                    is_active: true
+                })
+            });
+
+            if (response.ok) {
+                await this.logAdminAction(adminWallet, 'create_user', userData.walletAddress, {
+                    user_name: userData.fullName,
+                    user_role: userData.role,
+                    department: userData.department
+                });
+                return true;
+            } else {
+                const error = await response.json();
+                throw new Error(error.message || 'Failed to create user');
+            }
+        } catch (error) {
+            console.error('Error creating user:', error);
+            throw error;
+        }
+    }
+
     // Admin Functions
     async getAllUsers() {
         try {
@@ -78,10 +149,27 @@ class Storage {
 
     async createAdminUser(adminWallet, newAdminData) {
         try {
+            // Verify the requesting user is actually an admin
+            const requestingUser = await this.getUser(adminWallet);
+            if (!requestingUser || requestingUser.role !== 'admin' || !requestingUser.is_active) {
+                throw new Error('Unauthorized: Only active administrators can create admin accounts');
+            }
+
             // Check if admin limit reached
             const admins = await this.getAdminCount();
             if (admins >= 10) {
                 throw new Error('Maximum admin limit (10) reached');
+            }
+
+            // Validate wallet address format
+            if (!newAdminData.walletAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
+                throw new Error('Invalid wallet address format');
+            }
+
+            // Check if wallet already exists
+            const existingUser = await this.getUser(newAdminData.walletAddress);
+            if (existingUser) {
+                throw new Error('Wallet address already registered');
             }
 
             const response = await fetch(`${this.apiUrl}/users`, {
@@ -104,8 +192,10 @@ class Storage {
                     admin_name: newAdminData.fullName
                 });
                 return true;
+            } else {
+                const error = await response.json();
+                throw new Error(error.message || 'Failed to create admin user');
             }
-            return false;
         } catch (error) {
             console.error('Error creating admin:', error);
             throw error;
@@ -114,23 +204,44 @@ class Storage {
 
     async deleteUser(adminWallet, targetWallet) {
         try {
+            // Verify the requesting user is actually an admin
+            const requestingUser = await this.getUser(adminWallet);
+            if (!requestingUser || requestingUser.role !== 'admin' || !requestingUser.is_active) {
+                throw new Error('Unauthorized: Only active administrators can delete users');
+            }
+
+            // Prevent self-deletion
             if (adminWallet === targetWallet) {
                 throw new Error('Administrators cannot delete their own account');
             }
 
+            // Verify target user exists
+            const targetUser = await this.getUser(targetWallet);
+            if (!targetUser) {
+                throw new Error('Target user not found');
+            }
+
+            // Perform soft delete
             const response = await fetch(`${this.apiUrl}/users?wallet_address=eq.${targetWallet}`, {
                 method: 'PATCH',
                 headers: this.headers,
-                body: JSON.stringify({ is_active: false })
+                body: JSON.stringify({ 
+                    is_active: false,
+                    last_updated: new Date().toISOString()
+                })
             });
 
             if (response.ok) {
                 await this.logAdminAction(adminWallet, 'delete_user', targetWallet, {
-                    action: 'soft_delete'
+                    action: 'soft_delete',
+                    target_user_name: targetUser.full_name,
+                    target_user_role: targetUser.role
                 });
                 return true;
+            } else {
+                const error = await response.json();
+                throw new Error(error.message || 'Failed to delete user');
             }
-            return false;
         } catch (error) {
             console.error('Error deleting user:', error);
             throw error;
@@ -297,6 +408,31 @@ class Storage {
         } catch (error) {
             console.error('Get evidence error:', error);
             return null;
+        }
+    }
+
+    // System Overview Functions
+    async getAllCases() {
+        try {
+            const response = await fetch(`${this.apiUrl}/cases?order=created_date.desc`, {
+                headers: this.headers
+            });
+            return response.ok ? await response.json() : [];
+        } catch (error) {
+            console.error('Error getting cases:', error);
+            return [];
+        }
+    }
+
+    async getRecentActivity(limit = 10) {
+        try {
+            const response = await fetch(`${this.apiUrl}/activity_logs?order=timestamp.desc&limit=${limit}`, {
+                headers: this.headers
+            });
+            return response.ok ? await response.json() : [];
+        } catch (error) {
+            console.error('Error getting recent activity:', error);
+            return [];
         }
     }
 
