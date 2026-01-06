@@ -299,5 +299,21 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [ ] Integration with external forensic tools
 
 ---
+### ⭐ Stargazers
 
+<a href="https://github.com/Gooichand/blockchain-evidence/stargazers">
+  <img src="https://reporoster.com/stars/Gooichand/blockchain-evidence?type=svg&limit=100&names=false" alt="Stargazers" />
+</a>
+
+---
+
+### 🍴 Forkers
+
+<a href="https://github.com/Gooichand/blockchain-evidence/network/members">
+  <img src="https://reporoster.com/forks/Gooichand/blockchain-evidence?type=svg&limit=100&names=false" alt="Forkers" />
+</a>
+
+---
+
+**Thank you for your support! ❤️**
 **🔐 Secure Evidence Management with Admin Controls** ⚖️
