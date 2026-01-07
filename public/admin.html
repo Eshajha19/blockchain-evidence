@@ -10,7 +10,7 @@
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script src="config.js"></script>
     <script src="storage.js"></script>
-    <script src="notifications.js"></script>
+    <script src="simple-notifications.js"></script>
     <script src="indian-apis.js"></script>
 </head>
 <body>
@@ -21,6 +21,7 @@
                 <div class="nav-items">
                     <span class="badge badge-admin">Administrator</span>
                     <span id="adminWallet" class="wallet-display">Loading...</span>
+                    <!-- Notification Bell will be added here by notifications.js -->
                     <button class="btn btn-outline btn-sm" onclick="logout()">Logout</button>
                 </div>
             </div>
@@ -234,12 +235,16 @@
             await loadRoleTestingDashboard();
             initializeEventListeners();
             
-            // Connect to notifications
-            if (currentAdmin && window.notificationManager) {
-                const adminWallet = currentAdmin.startsWith('email_') ? 
-                    '0x29bb7718d5c6da6e787deae8fd6bb3459e8539f2' : currentAdmin;
-                window.notificationManager.connect(adminWallet);
-            }
+            // Test notification after everything loads
+            setTimeout(() => {
+                if (window.simpleNotifications) {
+                    window.simpleNotifications.addNotification(
+                        'Admin Dashboard Ready',
+                        'All systems operational!',
+                        'system'
+                    );
+                }
+            }, 2000);
         });
 
         async function createDefaultTestAccounts() {

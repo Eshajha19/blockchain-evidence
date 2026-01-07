@@ -286,7 +286,23 @@ app.post('/api/notifications/create', async (req, res) => {
             return res.status(400).json({ error: 'Invalid wallet address' });
         }
 
-        const notification = await createNotification(userWallet, title, message, type, data);
+        // Create notification object
+        const notification = {
+            id: Date.now(),
+            user_wallet: userWallet,
+            title,
+            message,
+            type,
+            data,
+            is_read: false,
+            created_at: new Date().toISOString()
+        };
+
+        // Send real-time notification if user is connected
+        if (connectedUsers.has(userWallet)) {
+            io.to(userWallet).emit('notification', notification);
+        }
+
         res.json({ success: true, notification });
     } catch (error) {
         console.error('Create notification error:', error);
