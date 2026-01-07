@@ -1,20 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📋 Evidence Management - EVID-DGC</title>
+    <title>Upload | EVID-DGC</title>
     <link rel="stylesheet" href="styles.css">
-    
+
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-KEYDE0ZH4Z"></script>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-KEYDE0ZH4Z');
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-KEYDE0ZH4Z');
     </script>
 </head>
+
 <body>
     <nav class="dashboard-nav">
         <div class="container">
@@ -63,12 +65,14 @@
                     </div>
                     <div class="form-group">
                         <label for="description">📝 Description *</label>
-                        <textarea id="description" class="form-control" rows="3" placeholder="Detailed description of evidence" required></textarea>
+                        <textarea id="description" class="form-control" rows="3"
+                            placeholder="Detailed description of evidence" required></textarea>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="location">📍 Collection Location</label>
-                            <input type="text" id="location" class="form-control" placeholder="Where evidence was collected">
+                            <input type="text" id="location" class="form-control"
+                                placeholder="Where evidence was collected">
                         </div>
                         <div class="form-group">
                             <label for="collectionDate">📅 Collection Date</label>
@@ -157,20 +161,20 @@
         // Smart contract ABI (simplified)
         const contractABI = [
             {
-                "inputs": [{"type": "string", "name": "_hash"}, {"type": "string", "name": "_metadata"}],
+                "inputs": [{ "type": "string", "name": "_hash" }, { "type": "string", "name": "_metadata" }],
                 "name": "storeEvidence",
-                "outputs": [{"type": "uint256"}],
+                "outputs": [{ "type": "uint256" }],
                 "type": "function"
             },
             {
-                "inputs": [{"type": "uint256", "name": "_id"}],
+                "inputs": [{ "type": "uint256", "name": "_id" }],
                 "name": "getEvidence",
-                "outputs": [{"type": "string"}, {"type": "string"}, {"type": "address"}, {"type": "uint256"}],
+                "outputs": [{ "type": "string" }, { "type": "string" }, { "type": "address" }, { "type": "uint256" }],
                 "type": "function"
             }
         ];
 
-        document.addEventListener('DOMContentLoaded', async function() {
+        document.addEventListener('DOMContentLoaded', async function () {
             await initializeEvidenceManager();
         });
 
@@ -193,7 +197,7 @@
                 await initializeWeb3();
                 await loadEvidence();
                 await updateBlockchainStatus();
-                
+
                 // Set up form handler
                 document.getElementById('evidenceForm').addEventListener('submit', handleEvidenceUpload);
                 document.getElementById('searchEvidence').addEventListener('input', filterEvidence);
@@ -210,7 +214,7 @@
                     const user = await storage.getUser(wallet);
                     if (user) return user;
                 }
-                
+
                 const savedUser = localStorage.getItem('evidUser_' + wallet);
                 return savedUser ? JSON.parse(savedUser) : null;
             } catch (error) {
@@ -230,11 +234,11 @@
             try {
                 if (window.ethereum) {
                     web3 = new Web3(window.ethereum);
-                    
+
                     // Mock contract address - replace with actual deployed contract
                     const contractAddress = '0x1234567890123456789012345678901234567890';
                     evidenceContract = new web3.eth.Contract(contractABI, contractAddress);
-                    
+
                     document.getElementById('contractStatus').textContent = '✅ Connected';
                 } else {
                     document.getElementById('contractStatus').textContent = '❌ No Web3';
@@ -247,11 +251,11 @@
 
         async function handleEvidenceUpload(event) {
             event.preventDefault();
-            
+
             try {
                 const formData = new FormData();
                 const file = document.getElementById('evidenceFile').files[0];
-                
+
                 if (!file) {
                     showAlert('Please select a file', 'error');
                     return;
@@ -266,7 +270,7 @@
 
                 // Calculate file hash
                 const fileHash = await calculateFileHash(file);
-                
+
                 // Create evidence metadata
                 const evidenceData = {
                     id: 'EVD-' + Date.now(),
@@ -296,7 +300,7 @@
 
                 // Store evidence data
                 await storeEvidenceData(evidenceData);
-                
+
                 // Track analytics
                 if (typeof trackEvent === 'function') {
                     trackEvent('evidence_uploaded', {
@@ -309,7 +313,7 @@
                 showAlert('Evidence uploaded and hashed successfully!', 'success');
                 document.getElementById('evidenceForm').reset();
                 await loadEvidence();
-                
+
             } catch (error) {
                 console.error('Upload error:', error);
                 showAlert('Upload failed: ' + error.message, 'error');
@@ -321,7 +325,7 @@
         async function calculateFileHash(file) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
-                reader.onload = async function(e) {
+                reader.onload = async function (e) {
                     const buffer = e.target.result;
                     const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
                     const hashArray = Array.from(new Uint8Array(hashBuffer));
@@ -361,7 +365,7 @@
 
         function renderEvidence(evidence) {
             const container = document.getElementById('evidenceList');
-            
+
             if (evidence.length === 0) {
                 container.innerHTML = '<p class="text-center text-muted">No evidence uploaded yet</p>';
                 return;
@@ -395,7 +399,7 @@
 
         function filterEvidence() {
             const searchTerm = document.getElementById('searchEvidence').value.toLowerCase();
-            const filtered = evidenceList.filter(item => 
+            const filtered = evidenceList.filter(item =>
                 item.fileName.toLowerCase().includes(searchTerm) ||
                 item.caseId.toLowerCase().includes(searchTerm) ||
                 item.description.toLowerCase().includes(searchTerm)
@@ -409,7 +413,7 @@
                     const network = await web3.eth.net.getNetworkType();
                     const blockNumber = await web3.eth.getBlockNumber();
                     const gasPrice = await web3.eth.getGasPrice();
-                    
+
                     document.getElementById('networkStatus').textContent = network;
                     document.getElementById('blockHeight').textContent = blockNumber;
                     document.getElementById('gasPrice').textContent = web3.utils.fromWei(gasPrice, 'gwei') + ' Gwei';
@@ -471,7 +475,7 @@
 
         function getRoleName(role) {
             const roleMap = {
-                'public_viewer': 'Public Viewer', 'investigator': 'Investigator', 
+                'public_viewer': 'Public Viewer', 'investigator': 'Investigator',
                 'forensic_analyst': 'Forensic Analyst', 'legal_professional': 'Legal Professional',
                 'court_official': 'Court Official', 'evidence_manager': 'Evidence Manager',
                 'auditor': 'Auditor', 'admin': 'Administrator',
@@ -549,18 +553,82 @@
     </script>
 
     <style>
-        .evidence-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .evidence-card { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 20px; cursor: pointer; transition: all 0.3s; }
-        .evidence-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); transform: translateY(-2px); }
-        .evidence-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .evidence-meta p { margin: 5px 0; font-size: 0.9rem; }
-        .evidence-actions { margin-top: 15px; display: flex; gap: 10px; }
-        .blockchain-status { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
-        .status-item { display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 4px; }
-        .search-input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; margin-right: 10px; }
-        .detail-section { margin-bottom: 30px; }
-        .detail-section h3 { color: var(--primary-color); margin-bottom: 15px; }
-        .detail-section code { background: #f8f9fa; padding: 4px 8px; border-radius: 4px; font-family: monospace; word-break: break-all; }
+        .evidence-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .evidence-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .evidence-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .evidence-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .evidence-meta p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+        }
+
+        .evidence-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .blockchain-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .search-input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+
+        .detail-section {
+            margin-bottom: 30px;
+        }
+
+        .detail-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .detail-section code {
+            background: #f8f9fa;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            word-break: break-all;
+        }
     </style>
 </body>
+
 </html>

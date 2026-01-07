@@ -1,20 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📊 Audit Trail - EVID-DGC</title>
+    <title>Audit Trail | EVID-DGC</title>
     <link rel="stylesheet" href="styles.css">
-    
+
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-KEYDE0ZH4Z"></script>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-KEYDE0ZH4Z');
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-KEYDE0ZH4Z');
     </script>
 </head>
+
 <body>
     <nav class="dashboard-nav">
         <div class="container">
@@ -57,8 +59,10 @@
                     </div>
                     <div class="form-group">
                         <label for="filterDate">📅 Date Range</label>
-                        <input type="date" id="filterDateFrom" class="form-control" style="width: 48%; display: inline-block;">
-                        <input type="date" id="filterDateTo" class="form-control" style="width: 48%; display: inline-block; margin-left: 4%;">
+                        <input type="date" id="filterDateFrom" class="form-control"
+                            style="width: 48%; display: inline-block;">
+                        <input type="date" id="filterDateTo" class="form-control"
+                            style="width: 48%; display: inline-block; margin-left: 4%;">
                     </div>
                     <div class="form-group">
                         <button class="btn btn-primary" onclick="applyFilters()">🔍 Apply Filters</button>
@@ -97,7 +101,8 @@
                     <div class="form-group">
                         <label for="hashInput">🔐 Verify Evidence Hash</label>
                         <div class="input-group">
-                            <input type="text" id="hashInput" class="form-control" placeholder="Enter SHA-256 hash to verify">
+                            <input type="text" id="hashInput" class="form-control"
+                                placeholder="Enter SHA-256 hash to verify">
                             <button class="btn btn-primary" onclick="verifyEvidenceHash()">🔍 Verify</button>
                         </div>
                     </div>
@@ -116,7 +121,7 @@
         let auditLog = [];
         let filteredLog = [];
 
-        document.addEventListener('DOMContentLoaded', async function() {
+        document.addEventListener('DOMContentLoaded', async function () {
             await initializeAuditTrail();
         });
 
@@ -144,7 +149,7 @@
                 updateUserUI(currentUser);
                 await loadAuditLog();
                 await populateUserFilter();
-                
+
                 // Set default date range (last 30 days)
                 const today = new Date();
                 const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
@@ -163,7 +168,7 @@
                     const user = await storage.getUser(wallet);
                     if (user) return user;
                 }
-                
+
                 const savedUser = localStorage.getItem('evidUser_' + wallet);
                 return savedUser ? JSON.parse(savedUser) : null;
             } catch (error) {
@@ -199,7 +204,7 @@
 
         function generateMockAuditLog() {
             const actions = [
-                'evidence_upload', 'evidence_view', 'evidence_seal', 'user_login', 
+                'evidence_upload', 'evidence_view', 'evidence_seal', 'user_login',
                 'user_create', 'hash_verify', 'case_create', 'report_generate'
             ];
             const users = [
@@ -211,7 +216,7 @@
                 const timestamp = new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000);
                 const action = actions[Math.floor(Math.random() * actions.length)];
                 const user = users[Math.floor(Math.random() * users.length)];
-                
+
                 log.push({
                     id: 'LOG-' + (1000 + i),
                     timestamp: timestamp.toISOString(),
@@ -243,7 +248,7 @@
 
         function renderAuditLog(logs) {
             const container = document.getElementById('auditLogContainer');
-            
+
             if (logs.length === 0) {
                 container.innerHTML = '<p class="text-center text-muted">No audit entries found</p>';
                 return;
@@ -288,7 +293,7 @@
         }
 
         function formatActionName(action) {
-            return action.split('_').map(word => 
+            return action.split('_').map(word =>
                 word.charAt(0).toUpperCase() + word.slice(1)
             ).join(' ');
         }
@@ -300,7 +305,7 @@
         async function populateUserFilter() {
             const userSelect = document.getElementById('filterUser');
             const uniqueUsers = [...new Set(auditLog.map(entry => entry.user))];
-            
+
             uniqueUsers.forEach(user => {
                 const option = document.createElement('option');
                 option.value = user;
@@ -320,12 +325,12 @@
 
                 if (userFilter && entry.user !== userFilter) matches = false;
                 if (actionFilter && entry.action !== actionFilter) matches = false;
-                
+
                 if (dateFromFilter) {
                     const entryDate = new Date(entry.timestamp).toISOString().split('T')[0];
                     if (entryDate < dateFromFilter) matches = false;
                 }
-                
+
                 if (dateToFilter) {
                     const entryDate = new Date(entry.timestamp).toISOString().split('T')[0];
                     if (entryDate > dateToFilter) matches = false;
@@ -336,7 +341,7 @@
 
             renderAuditLog(filteredLog);
             document.getElementById('logCount').textContent = `${filteredLog.length} entries`;
-            
+
             // Track analytics
             if (typeof trackUserAction === 'function') {
                 trackUserAction('audit_filter_applied', 'audit_trail');
@@ -356,9 +361,9 @@
             a.download = `audit_log_${new Date().toISOString().split('T')[0]}.csv`;
             a.click();
             window.URL.revokeObjectURL(url);
-            
+
             showAlert('Audit log exported successfully', 'success');
-            
+
             // Track analytics
             if (typeof trackUserAction === 'function') {
                 trackUserAction('audit_log_exported', 'audit_trail');
@@ -368,7 +373,7 @@
         function generateCSV(data) {
             const headers = ['ID', 'Timestamp', 'Action', 'User', 'Details', 'IP Address', 'Blockchain TX', 'Success'];
             const csvRows = [headers.join(',')];
-            
+
             data.forEach(entry => {
                 const row = [
                     entry.id,
@@ -382,14 +387,14 @@
                 ];
                 csvRows.push(row.join(','));
             });
-            
+
             return csvRows.join('\n');
         }
 
         async function verifyEvidenceHash() {
             const hash = document.getElementById('hashInput').value.trim();
             const resultDiv = document.getElementById('verificationResult');
-            
+
             if (!hash) {
                 showAlert('Please enter a hash to verify', 'error');
                 return;
@@ -404,7 +409,7 @@
                 // Mock verification - in real implementation, check blockchain
                 const isValid = Math.random() > 0.3; // 70% chance of being valid
                 const evidenceId = isValid ? 'EVD-' + Math.floor(Math.random() * 1000) : null;
-                
+
                 if (isValid) {
                     resultDiv.innerHTML = `
                         <div class="verification-success">
@@ -423,12 +428,12 @@
                         </div>
                     `;
                 }
-                
+
                 // Track analytics
                 if (typeof trackUserAction === 'function') {
                     trackUserAction('hash_verification', 'audit_trail');
                 }
-                
+
             } catch (error) {
                 console.error('Verification error:', error);
                 showAlert('Verification failed: ' + error.message, 'error');
@@ -437,7 +442,7 @@
 
         function getRoleName(role) {
             const roleMap = {
-                'public_viewer': 'Public Viewer', 'investigator': 'Investigator', 
+                'public_viewer': 'Public Viewer', 'investigator': 'Investigator',
                 'forensic_analyst': 'Forensic Analyst', 'legal_professional': 'Legal Professional',
                 'court_official': 'Court Official', 'evidence_manager': 'Evidence Manager',
                 'auditor': 'Auditor', 'admin': 'Administrator',
@@ -479,25 +484,106 @@
     </script>
 
     <style>
-        .filter-row { display: grid; grid-template-columns: 1fr 1fr 2fr 1fr; gap: 20px; align-items: end; }
-        .audit-log { max-height: 600px; overflow-y: auto; }
-        .audit-entry { border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px; padding: 15px; background: white; }
-        .audit-entry.failed { border-left: 4px solid #dc3545; }
-        .audit-entry.success { border-left: 4px solid #28a745; }
-        .audit-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .audit-action { display: flex; align-items: center; gap: 10px; }
-        .action-icon { font-size: 1.2rem; }
-        .action-name { font-weight: 600; }
-        .audit-status.success { color: #28a745; }
-        .audit-status.failed { color: #dc3545; }
-        .audit-time { color: #666; font-size: 0.9rem; }
-        .audit-details p { margin: 5px 0; font-size: 0.9rem; }
-        .verification-tools { max-width: 600px; }
-        .input-group { display: flex; gap: 10px; }
-        .input-group input { flex: 1; }
-        .verification-result { margin-top: 20px; }
-        .verification-success { padding: 20px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; color: #155724; }
-        .verification-failed { padding: 20px; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px; color: #721c24; }
+        .filter-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 2fr 1fr;
+            gap: 20px;
+            align-items: end;
+        }
+
+        .audit-log {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .audit-entry {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: white;
+        }
+
+        .audit-entry.failed {
+            border-left: 4px solid #dc3545;
+        }
+
+        .audit-entry.success {
+            border-left: 4px solid #28a745;
+        }
+
+        .audit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .audit-action {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .action-icon {
+            font-size: 1.2rem;
+        }
+
+        .action-name {
+            font-weight: 600;
+        }
+
+        .audit-status.success {
+            color: #28a745;
+        }
+
+        .audit-status.failed {
+            color: #dc3545;
+        }
+
+        .audit-time {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .audit-details p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+        }
+
+        .verification-tools {
+            max-width: 600px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-group input {
+            flex: 1;
+        }
+
+        .verification-result {
+            margin-top: 20px;
+        }
+
+        .verification-success {
+            padding: 20px;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            color: #155724;
+        }
+
+        .verification-failed {
+            padding: 20px;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            color: #721c24;
+        }
     </style>
 </body>
+
 </html>

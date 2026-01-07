@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings | EVID-DGC</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="config.js"></script>
+    <script src="storage.js"></script>
+    <script src="app.js"></script>
+</head>
+
+<body>
+    <nav class="header-nav">
+        <div class="navbar-container">
+            <a href="index.html" class="nav-brand">
+                <i data-lucide="shield-check" class="brand-icon"></i>
+                <span>EVID-DGC</span>
+            </a>
+            <div class="nav-items">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="settings.html" class="nav-link" style="color: var(--primary-red);">Settings</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="hero-section" style="margin: 40px 0; text-align: left;">
+            <h1>Settings</h1>
+            <p class="hero-subtitle">Configure system preferences and security</p>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>General Preferences</h2>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label>
+                        <i data-lucide="moon"></i>
+                        Theme
+                    </label>
+                    <select class="form-control">
+                        <option value="light">Light Mode</option>
+                        <option value="dark">Dark Mode</option>
+                        <option value="system">System Default</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <i data-lucide="bell"></i>
+                        Notifications
+                    </label>
+                    <div style="display: flex; gap: 20px; margin-top: 10px;">
+                        <label style="font-weight: normal;"><input type="checkbox"> Email Notifications</label>
+                        <label style="font-weight: normal;"><input type="checkbox"> Browser Push Notifications</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Security</h2>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label>
+                        <i data-lucide="shield"></i>
+                        Two-Factor Authentication
+                    </label>
+                    <button class="btn btn-outline" style="margin-top: 10px;">Enable 2FA</button>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <i data-lucide="key"></i>
+                        Change Password
+                    </label>
+                    <div style="display: grid; gap: 10px; margin-top: 10px;">
+                        <input type="password" class="form-control" placeholder="Current Password">
+                        <input type="password" class="form-control" placeholder="New Password">
+                        <input type="password" class="form-control" placeholder="Confirm New Password">
+                        <button class="btn btn-primary" style="width: fit-content;">Update Password</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            lucide.createIcons();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,29 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+
     <!-- SEO Meta Tags -->
-    <title>EVID-DGC Dashboard | Blockchain Evidence Management</title>
-    <meta name="description" content="Access your role-specific dashboard for secure evidence management and blockchain operations.">
+    <title>Dashboard | EVID-DGC</title>
+    <meta name="description"
+        content="Access your role-specific dashboard for secure evidence management and blockchain operations.">
     <meta name="robots" content="noindex, nofollow">
-    
+
     <link rel="stylesheet" href="styles.css?v=8">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
-    
+
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    
+
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-KEYDE0ZH4Z"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
+        function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
         gtag('config', 'G-KEYDE0ZH4Z');
     </script>
 </head>
+
 <body>
     <!-- Professional Navigation -->
     <nav class="navbar">
@@ -102,7 +105,7 @@
             'evidence_manager': 'dashboard-manager.html',
             'auditor': 'dashboard-auditor.html',
             'public_viewer': 'dashboard-public.html',
-            
+
             // Number-based roles (for backward compatibility)
             1: 'dashboard-public.html',
             2: 'dashboard-investigator.html',
@@ -135,7 +138,7 @@
 
         let progressInterval;
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             lucide.createIcons();
             initializeDashboard();
         });
@@ -143,7 +146,7 @@
         async function initializeDashboard() {
             try {
                 updateProgress('Initializing dashboard...', 10);
-                
+
                 // Initialize logout button
                 const logoutBtn = document.getElementById('logoutBtn');
                 if (logoutBtn) {
@@ -155,7 +158,7 @@
 
                 const userAccount = localStorage.getItem('currentUser');
                 console.log('Dashboard router - userAccount:', userAccount);
-                
+
                 if (!userAccount) {
                     throw new Error('No user account found. Please log in again.');
                 }
@@ -165,18 +168,18 @@
 
                 // Get user data
                 let userInfo = await getUserInfo(userAccount);
-                
+
                 if (!userInfo) {
                     throw new Error('User profile not found. Please register again.');
                 }
 
                 updateProgress('Preparing dashboard...', 70);
-                
+
                 // Initialize role-based navigation
                 if (window.RoleNavigation) {
                     window.RoleNavigation.initializeRoleNavigation();
                 }
-                
+
                 // Update navbar with user info
                 updateNavbarUserInfo(userInfo, userAccount);
 
@@ -186,7 +189,7 @@
                 // Route to appropriate dashboard
                 const dashboardUrl = getDashboardUrl(userInfo.role);
                 console.log(`Redirecting ${userInfo.role} to ${dashboardUrl}`);
-                
+
                 // Track dashboard access
                 if (typeof gtag === 'function') {
                     gtag('event', 'dashboard_access', {
@@ -196,7 +199,7 @@
                 }
 
                 updateProgress('Complete!', 100);
-                
+
                 setTimeout(() => {
                     window.location.href = dashboardUrl;
                 }, 300);
@@ -209,7 +212,7 @@
 
         async function getUserInfo(userAccount) {
             let userInfo = null;
-            
+
             // Try database first (if available)
             if (typeof storage !== 'undefined') {
                 try {
@@ -257,11 +260,11 @@
         function updateProgress(message, percentage) {
             const progressText = document.querySelector('.progress-text');
             const progressFill = document.querySelector('.progress-fill');
-            
+
             if (progressText) {
                 progressText.textContent = message;
             }
-            
+
             if (progressFill) {
                 progressFill.style.width = percentage + '%';
             }
@@ -293,7 +296,7 @@
 
             // Reset progress
             updateProgress('Retrying...', 0);
-            
+
             // Retry after a short delay
             setTimeout(() => {
                 initializeDashboard();
@@ -314,7 +317,7 @@
 
             // Clear all user data
             localStorage.clear();
-            
+
             // Redirect to login
             window.location.href = 'index.html';
         }
@@ -521,4 +524,5 @@
         document.head.appendChild(style);
     </script>
 </body>
+
 </html>

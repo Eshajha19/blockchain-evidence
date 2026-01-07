@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>👁️ Public Viewer Dashboard - EVID-DGC</title>
+    <title>Public View | EVID-DGC</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
@@ -14,39 +15,46 @@
             text-align: center;
             margin-bottom: 30px;
         }
+
         .hero-content h1 {
             font-size: 2.5rem;
             margin-bottom: 10px;
         }
+
         .public-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
             margin-top: 30px;
         }
+
         .stat-card {
-            background: rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.1);
             padding: 20px;
             border-radius: 12px;
             backdrop-filter: blur(10px);
         }
+
         .stat-number {
             font-size: 2rem;
             font-weight: bold;
             display: block;
         }
+
         .public-cases {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
         }
+
         .public-case-card {
             background: white;
             border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             border-left: 4px solid #10b981;
         }
+
         .case-status {
             padding: 4px 12px;
             border-radius: 20px;
@@ -55,13 +63,15 @@
             background: #d1fae5;
             color: #065f46;
         }
+
         .search-bar {
             background: white;
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             margin-bottom: 30px;
         }
+
         .search-input {
             width: 100%;
             padding: 12px 16px;
@@ -69,12 +79,14 @@
             border-radius: 8px;
             font-size: 1rem;
         }
+
         .search-input:focus {
             outline: none;
             border-color: #10b981;
         }
     </style>
 </head>
+
 <body>
     <!-- Navigation -->
     <nav class="navbar">
@@ -125,7 +137,8 @@
         <div class="search-bar">
             <h3 style="margin-bottom: 15px;">🔍 Search Public Records</h3>
             <div style="display: flex; gap: 10px;">
-                <input type="text" class="search-input" placeholder="Search by case ID, location, or keywords..." id="searchInput">
+                <input type="text" class="search-input" placeholder="Search by case ID, location, or keywords..."
+                    id="searchInput">
                 <button class="btn btn-primary" onclick="searchCases()">
                     <i data-lucide="search"></i>
                     Search
@@ -142,7 +155,8 @@
             <div class="card-body">
                 <div class="public-cases" id="publicCasesGrid">
                     <div class="public-case-card">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                             <h3>Downtown Burglary Case</h3>
                             <span class="case-status">CLOSED</span>
                         </div>
@@ -155,9 +169,10 @@
                             <button class="btn btn-sm btn-outline">Evidence List</button>
                         </div>
                     </div>
-                    
+
                     <div class="public-case-card">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                             <h3>Public Safety Incident</h3>
                             <span class="case-status">CLOSED</span>
                         </div>
@@ -170,9 +185,10 @@
                             <button class="btn btn-sm btn-outline">Evidence List</button>
                         </div>
                     </div>
-                    
+
                     <div class="public-case-card">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                             <h3>Traffic Investigation</h3>
                             <span class="case-status">CLOSED</span>
                         </div>
@@ -197,15 +213,19 @@
             </div>
             <div class="card-body">
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
-                    <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; border-left: 4px solid #0ea5e9;">
+                    <div
+                        style="background: #f0f9ff; padding: 20px; border-radius: 8px; border-left: 4px solid #0ea5e9;">
                         <h4>🔒 Data Privacy</h4>
-                        <p>All public records are filtered to protect sensitive information while maintaining transparency.</p>
+                        <p>All public records are filtered to protect sensitive information while maintaining
+                            transparency.</p>
                     </div>
-                    <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; border-left: 4px solid #22c55e;">
+                    <div
+                        style="background: #f0fdf4; padding: 20px; border-radius: 8px; border-left: 4px solid #22c55e;">
                         <h4>✅ Verified Records</h4>
                         <p>All evidence and case information is blockchain-verified for authenticity and integrity.</p>
                     </div>
-                    <div style="background: #fefce8; padding: 20px; border-radius: 8px; border-left: 4px solid #eab308;">
+                    <div
+                        style="background: #fefce8; padding: 20px; border-radius: 8px; border-left: 4px solid #eab308;">
                         <h4>📅 Regular Updates</h4>
                         <p>Public records are updated regularly as cases progress through the legal system.</p>
                     </div>
@@ -249,7 +269,7 @@
     <script>
         let currentUser = null;
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             lucide.createIcons();
             initializeDashboard();
         });
@@ -264,7 +284,7 @@
 
                 // Get user data from localStorage
                 let userData = JSON.parse(localStorage.getItem('evidUser_' + userAccount) || '{}');
-                
+
                 if (!userData.role) {
                     alert('User data not found. Please login again.');
                     logout();
@@ -291,12 +311,12 @@
         function updateUserInterface() {
             const isTestUser = localStorage.getItem('testUserMode') === 'true';
             const userName = currentUser.fullName || 'Public Viewer';
-            
-            document.getElementById('userRole').textContent = isTestUser ? 
+
+            document.getElementById('userRole').textContent = isTestUser ?
                 `👁️ ${userName} (Test)` : `👁️ Public Viewer`;
-            
+
             if (currentUser.walletAddress) {
-                document.getElementById('userWallet').textContent = 
+                document.getElementById('userWallet').textContent =
                     currentUser.walletAddress.slice(0, 6) + '...' + currentUser.walletAddress.slice(-4);
             }
         }
@@ -325,4 +345,5 @@
         }
     </script>
 </body>
+
 </html>

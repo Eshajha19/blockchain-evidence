@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - EVID-DGC</title>
+    <title>Admin | EVID-DGC</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
@@ -11,6 +12,7 @@
     <script src="storage.js"></script>
     <script src="indian-apis.js"></script>
 </head>
+
 <body>
     <nav class="dashboard-nav">
         <div class="container">
@@ -79,8 +81,8 @@
                                 Wallet Address *
                             </label>
                             <div style="display: flex; gap: 10px;">
-                                <input type="text" id="userWalletAddress" class="form-control" 
-                                       placeholder="0x..." required style="flex: 1;">
+                                <input type="text" id="userWalletAddress" class="form-control" placeholder="0x..."
+                                    required style="flex: 1;">
                                 <button type="button" class="btn btn-outline btn-sm" onclick="autoFillWalletAddress()">
                                     Generate
                                 </button>
@@ -91,24 +93,24 @@
                                 <i data-lucide="user"></i>
                                 First Name *
                             </label>
-                            <input type="text" id="userFirstName" class="form-control" 
-                                   placeholder="Enter first name" required>
+                            <input type="text" id="userFirstName" class="form-control" placeholder="Enter first name"
+                                required>
                         </div>
                         <div class="form-group">
                             <label for="userLastName">
                                 <i data-lucide="user"></i>
                                 Last Name *
                             </label>
-                            <input type="text" id="userLastName" class="form-control" 
-                                   placeholder="Enter last name" required>
+                            <input type="text" id="userLastName" class="form-control" placeholder="Enter last name"
+                                required>
                         </div>
                         <div class="form-group">
                             <label for="userEmail">
                                 <i data-lucide="mail"></i>
                                 Email Address *
                             </label>
-                            <input type="email" id="userEmail" class="form-control" 
-                                   placeholder="user@example.com" required>
+                            <input type="email" id="userEmail" class="form-control" placeholder="user@example.com"
+                                required>
                         </div>
                         <div class="form-group">
                             <label for="userRole">
@@ -131,8 +133,7 @@
                                 <i data-lucide="building"></i>
                                 Department
                             </label>
-                            <input type="text" id="userDepartment" class="form-control" 
-                                   placeholder="Enter department">
+                            <input type="text" id="userDepartment" class="form-control" placeholder="Enter department">
                         </div>
                     </div>
                     <div class="form-actions">
@@ -160,7 +161,8 @@
                     <h3>Quick Setup</h3>
                     <p>Create test accounts for all user roles:</p>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button id="createAllTestAccounts" class="btn btn-success btn-lg" onclick="createAllTestAccounts()">
+                        <button id="createAllTestAccounts" class="btn btn-success btn-lg"
+                            onclick="createAllTestAccounts()">
                             <i data-lucide="plus"></i>
                             Create All Test Accounts
                         </button>
@@ -195,7 +197,7 @@
                     </button>
                     <span id="userCount" class="ml-4 text-muted">Loading...</span>
                 </div>
-                
+
                 <div class="table-container">
                     <table class="user-table">
                         <thead>
@@ -223,7 +225,7 @@
     <script>
         let currentAdmin = null;
 
-        document.addEventListener('DOMContentLoaded', async function() {
+        document.addEventListener('DOMContentLoaded', async function () {
             lucide.createIcons();
             await checkAdminAuth();
             await createDefaultTestAccounts();
@@ -247,7 +249,7 @@
             testRoles.forEach((testRole, index) => {
                 const testWallet = `0xtest${testRole.role}${(1000 + index).toString()}`;
                 const existingKey = `evidUser_${testWallet}`;
-                
+
                 const existingTest = Object.keys(localStorage)
                     .filter(key => key.startsWith('evidUser_0xtest'))
                     .find(key => {
@@ -258,7 +260,7 @@
                             return false;
                         }
                     });
-                
+
                 if (!existingTest) {
                     const testUserData = {
                         walletAddress: testWallet,
@@ -276,17 +278,17 @@
                     localStorage.setItem(existingKey, JSON.stringify(testUserData));
                 }
             });
-            
+
             await loadRoleTestingDashboard();
         }
 
         async function createAllTestAccounts() {
             const button = document.getElementById('createAllTestAccounts');
             const status = document.getElementById('allTestStatus');
-            
+
             button.disabled = true;
             button.innerHTML = '<i data-lucide="loader"></i> Creating...';
-            
+
             const testRoles = [
                 { role: 'public_viewer', name: 'Test Public Viewer' },
                 { role: 'investigator', name: 'Test Investigator' },
@@ -296,13 +298,13 @@
                 { role: 'evidence_manager', name: 'Test Evidence Manager' },
                 { role: 'auditor', name: 'Test Auditor' }
             ];
-            
+
             let created = 0;
-            
+
             testRoles.forEach((testRole, index) => {
                 const testWallet = `0xtest${testRole.role}${1000 + index}`;
                 const existingTest = localStorage.getItem(`evidUser_${testWallet}`);
-                
+
                 if (!existingTest) {
                     const testUserData = {
                         walletAddress: testWallet,
@@ -321,18 +323,18 @@
                     created++;
                 }
             });
-                
+
             status.innerHTML = `<div class="alert alert-success">Created ${created} test accounts</div>`;
-            
+
             await loadRoleTestingDashboard();
             await loadAllUsers();
-            
+
             setTimeout(() => status.innerHTML = '', 3000);
             button.disabled = false;
             button.innerHTML = '<i data-lucide="plus"></i> Create All Test Accounts';
             lucide.createIcons();
         }
-        
+
         async function loadRoleTestingDashboard() {
             const testRoles = [
                 { role: 'public_viewer', name: 'Public Viewer', icon: 'eye', description: 'View public cases' },
@@ -343,7 +345,7 @@
                 { role: 'evidence_manager', name: 'Evidence Manager', icon: 'clipboard-list', description: 'Manage evidence' },
                 { role: 'auditor', name: 'Auditor', icon: 'audit', description: 'System auditing' }
             ];
-            
+
             const testAccounts = Object.keys(localStorage)
                 .filter(key => key.startsWith('evidUser_0xtest'))
                 .map(key => {
@@ -358,38 +360,38 @@
                     }
                 })
                 .filter(account => account !== null);
-                
+
             const grid = document.getElementById('roleTestingGrid');
-            
+
             grid.innerHTML = testRoles.map(role => {
                 const account = testAccounts.find(acc => acc.role === role.role);
                 const hasAccount = !!account;
-                
+
                 return `
                     <div class="stat-card ${hasAccount ? 'test-ready' : 'test-missing'}" style="${hasAccount ? 'border: 2px solid #28a745;' : 'border: 2px solid #ffc107;'}">
                         <div class="stat-icon"><i data-lucide="${role.icon}"></i></div>
                         <div class="stat-info">
                             <h4>${role.name}</h4>
                             <p>${role.description}</p>
-                            ${hasAccount ? 
-                                `<button class="btn btn-sm btn-success" onclick="testRoleInterface('${account.wallet_address}', '${role.name}')">
+                            ${hasAccount ?
+                        `<button class="btn btn-sm btn-success" onclick="testRoleInterface('${account.wallet_address}', '${role.name}')">
                                     <i data-lucide="play"></i> Test Interface
                                 </button>
                                 <button class="btn btn-sm btn-outline" onclick="copyToClipboard('${account.wallet_address}')">
                                     <i data-lucide="copy"></i> Copy Wallet
                                 </button>` :
-                                `<button class="btn btn-sm btn-warning" onclick="createSingleTestAccount('${role.role}', 'Test ${role.name}')">
+                        `<button class="btn btn-sm btn-warning" onclick="createSingleTestAccount('${role.role}', 'Test ${role.name}')">
                                     <i data-lucide="plus"></i> Create Account
                                 </button>`
-                            }
+                    }
                         </div>
                     </div>
                 `;
             }).join('');
-            
+
             lucide.createIcons();
         }
-        
+
         async function createSingleTestAccount(role, name) {
             const testWallet = `0xtest${role}${Math.random().toString(36).substring(2, 8)}`;
             const testUserData = {
@@ -402,38 +404,38 @@
                 registrationDate: new Date().toISOString(),
                 createdBy: currentAdmin
             };
-            
+
             localStorage.setItem(`evidUser_${testWallet}`, JSON.stringify(testUserData));
             showAlert(`Test account created for ${name}!`, 'success');
             await loadRoleTestingDashboard();
             await loadAllUsers();
         }
-        
+
         function testRoleInterface(walletAddress, roleName) {
             try {
                 let testUserData = localStorage.getItem('evidUser_' + walletAddress);
-                
+
                 if (!testUserData) {
                     showAlert('Test user data not found. Please recreate test accounts.', 'error');
                     return;
                 }
-                
+
                 testUserData = JSON.parse(testUserData);
-                
+
                 localStorage.removeItem('currentUser');
                 localStorage.removeItem('testUserMode');
                 localStorage.removeItem('testUserName');
-                
+
                 localStorage.setItem('currentUser', walletAddress);
                 localStorage.setItem('testUserMode', 'true');
                 localStorage.setItem('testUserName', roleName);
-                
+
                 showAlert(`Testing ${roleName} interface...`, 'success');
-                
+
                 setTimeout(() => {
                     window.open('dashboard.html', '_blank');
                 }, 1000);
-                
+
             } catch (error) {
                 showAlert('Error testing interface: ' + error.message, 'error');
             }
@@ -453,9 +455,9 @@
                 } else {
                     userData = JSON.parse(localStorage.getItem('evidUser_' + currentUser) || '{}');
                 }
-                
+
                 const isAdmin = userData.role === 8 || userData.role === 'admin' || userData.accountType === 'admin';
-                
+
                 if (!isAdmin) {
                     alert('Access denied. Administrator privileges required.');
                     window.location.href = 'index.html';
@@ -465,9 +467,9 @@
                 currentAdmin = currentUser;
                 const displayWallet = currentUser.startsWith('email_') ? 'Email Login' : currentUser.substring(0, 8) + '...';
                 document.getElementById('adminWallet').textContent = displayWallet;
-                
+
                 autoFillWalletAddress();
-                
+
             } catch (error) {
                 alert('Access denied. Administrator privileges required.');
                 window.location.href = 'index.html';
@@ -562,9 +564,9 @@
                         <td>${new Date(user.created_at).toLocaleDateString()}</td>
                         <td>
                             ${user.is_active && user.wallet_address !== currentAdmin ?
-                                `<button class="btn btn-sm btn-danger" onclick="deleteUser('${user.wallet_address}')">Delete</button>` :
-                                user.wallet_address === currentAdmin ? '<span class="text-muted">Self</span>' : '<span class="text-muted">Deleted</span>'
-                            }
+                        `<button class="btn btn-sm btn-danger" onclick="deleteUser('${user.wallet_address}')">Delete</button>` :
+                        user.wallet_address === currentAdmin ? '<span class="text-muted">Self</span>' : '<span class="text-muted">Deleted</span>'
+                    }
                         </td>
                     </tr>
                 `).join('');
@@ -632,7 +634,7 @@
             document.body.appendChild(alert);
             setTimeout(() => alert.remove(), 5000);
         }
-        
+
         function autoFillWalletAddress() {
             const generateWalletAddress = () => {
                 const chars = '0123456789abcdef';
@@ -642,13 +644,13 @@
                 }
                 return result;
             };
-            
+
             const walletField = document.getElementById('userWalletAddress');
             if (walletField && !walletField.value) {
                 walletField.value = generateWalletAddress();
             }
         }
-        
+
         function forceRecreateTestAccounts() {
             if (confirm('This will delete and recreate all test accounts. Continue?')) {
                 const keys = Object.keys(localStorage);
@@ -657,16 +659,16 @@
                         localStorage.removeItem(key);
                     }
                 });
-                
+
                 showAlert('Recreating test accounts...', 'info');
                 setTimeout(() => createAllTestAccounts(), 1000);
             }
         }
-        
+
         function resetUserForm() {
             document.getElementById('createUserForm').reset();
         }
-        
+
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.clear();
@@ -678,4 +680,5 @@
         }
     </script>
 </body>
+
 </html>

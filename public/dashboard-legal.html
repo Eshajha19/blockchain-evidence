@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚖️ Legal Professional Dashboard - EVID-DGC</title>
+    <title>Legal | EVID-DGC</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
@@ -14,22 +15,28 @@
             text-align: center;
             margin-bottom: 30px;
         }
+
         .legal-tools {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
         }
+
         .tool-card {
             background: white;
             border-radius: 12px;
             padding: 25px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        .tool-card:hover { transform: translateY(-2px); }
+
+        .tool-card:hover {
+            transform: translateY(-2px);
+        }
     </style>
 </head>
+
 <body>
     <nav class="navbar">
         <div class="navbar-left">
@@ -54,7 +61,8 @@
         <div class="container">
             <h1>⚖️ Legal Professional Dashboard</h1>
             <p>Legal review, compliance, and case preparation</p>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 30px;">
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 30px;">
                 <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px;">
                     <span style="font-size: 2rem; font-weight: bold; display: block;">8</span>
                     <span>Cases Under Review</span>
@@ -78,17 +86,20 @@
             </div>
             <div class="card-body">
                 <div class="legal-tools">
-                    <div class="tool-card" onclick="alert('📋 Case Review Tool - Review evidence admissibility and legal compliance')">
+                    <div class="tool-card"
+                        onclick="alert('📋 Case Review Tool - Review evidence admissibility and legal compliance')">
                         <span style="font-size: 2.5rem; color: #dc2626;">📋</span>
                         <h3>Case Review</h3>
                         <p>Review evidence admissibility and legal compliance</p>
                     </div>
-                    <div class="tool-card" onclick="alert('📄 Legal Opinion Generator - Create formal legal opinions and recommendations')">
+                    <div class="tool-card"
+                        onclick="alert('📄 Legal Opinion Generator - Create formal legal opinions and recommendations')">
                         <span style="font-size: 2.5rem; color: #dc2626;">📄</span>
                         <h3>Legal Opinions</h3>
                         <p>Create formal legal opinions and recommendations</p>
                     </div>
-                    <div class="tool-card" onclick="alert('🏛️ Court Filing System - Prepare and submit court documents')">
+                    <div class="tool-card"
+                        onclick="alert('🏛️ Court Filing System - Prepare and submit court documents')">
                         <span style="font-size: 2.5rem; color: #dc2626;">🏛️</span>
                         <h3>Court Filings</h3>
                         <p>Prepare and submit court documents</p>
@@ -104,28 +115,28 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             lucide.createIcons();
             const userAccount = localStorage.getItem('currentUser');
             if (!userAccount) {
                 window.location.href = 'index.html';
                 return;
             }
-            
+
             let userData = JSON.parse(localStorage.getItem('evidUser_' + userAccount) || '{}');
             if (userData.role !== 'legal_professional' && userData.role !== 4) {
                 alert('Access denied. Legal Professional role required.');
                 logout();
                 return;
             }
-            
+
             const isTestUser = localStorage.getItem('testUserMode') === 'true';
             const userName = userData.fullName || 'Legal Professional';
-            document.getElementById('userRole').textContent = isTestUser ? 
+            document.getElementById('userRole').textContent = isTestUser ?
                 `⚖️ ${userName} (Test)` : `⚖️ Legal Professional`;
-            
+
             if (userData.walletAddress) {
-                document.getElementById('userWallet').textContent = 
+                document.getElementById('userWallet').textContent =
                     userData.walletAddress.slice(0, 6) + '...' + userData.walletAddress.slice(-4);
             }
         });
@@ -138,4 +149,5 @@
         }
     </script>
 </body>
+
 </html>

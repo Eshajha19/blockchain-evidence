@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cases | Blockchain Evidence</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="config.js"></script>
+    <script src="storage.js"></script>
+    <script src="app.js"></script>
+</head>
+
+<body>
+    <nav class="header-nav">
+        <div class="navbar-container">
+            <a href="index.html" class="nav-brand">
+                <i data-lucide="shield-check" class="brand-icon"></i>
+                <span>EVID-DGC</span>
+            </a>
+            <div class="nav-items">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="cases.html" class="nav-link" style="color: var(--primary-red);">Cases</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="hero-section" style="margin: 40px 0; text-align: left;">
+            <h1>Cases & Investigations</h1>
+            <p class="hero-subtitle">Search and manage evidence cases</p>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" class="form-control" placeholder="Search cases by ID, name, or status...">
+                    <button class="btn btn-primary">
+                        <i data-lucide="search"></i> Search
+                    </button>
+                    <button class="btn btn-outline">
+                        <i data-lucide="filter"></i> Filter
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-container">
+                    <table class="user-table" style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>Case ID</th>
+                                <th>Title</th>
+                                <th>Status</th>
+                                <th>Created Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 40px; color: #666;">
+                                    <i data-lucide="folder-open"
+                                        style="width: 48px; height: 48px; margin-bottom: 10px; opacity: 0.5;"></i>
+                                    <p>No cases found. Start a new investigation from the dashboard.</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            lucide.createIcons();
+        });
+    </script>
+</body>
+
+</html>
