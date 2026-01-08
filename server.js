@@ -271,6 +271,11 @@ const logAdminAction = async (adminWallet, actionType, targetWallet, details) =>
 };
 
 // API Routes
+// Case timeline route
+app.get('/case-timeline', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'case-timeline.html'));
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
