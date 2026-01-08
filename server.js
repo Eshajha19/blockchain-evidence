@@ -1195,7 +1195,8 @@ app.get('/api/cases', async (req, res) => {
     } catch (error) {
         console.error('Get cases error:', error);
         res.status(500).json({ error: 'Failed to get cases' });
-// Evidence Integrity Verification API Endpoints
+    }
+});
 
 // Verify file integrity against blockchain
 app.post('/api/evidence/verify-integrity', async (req, res) => {
