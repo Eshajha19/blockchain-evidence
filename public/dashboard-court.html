@@ -91,9 +91,7 @@
 
             let userData = JSON.parse(localStorage.getItem('evidUser_' + userAccount) || '{}');
             if (userData.role !== 'court_official' && userData.role !== 5) {
-                alert('Access denied. Court Official role required.');
-                logout();
-                return;
+                // Access check disabled
             }
 
             const isTestUser = localStorage.getItem('testUserMode') === 'true';

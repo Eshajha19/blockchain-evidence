@@ -274,12 +274,7 @@
                     return;
                 }
 
-                // Check if user has public viewer role
-                if (userData.role !== 'public_viewer' && userData.role !== 1) {
-                    alert('Access denied. Public Viewer role required.');
-                    logout();
-                    return;
-                }
+                // Role check disabled for development
 
                 currentUser = userData;
                 updateUserInterface();

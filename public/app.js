@@ -424,35 +424,28 @@ async function connectWallet() {
 
         userAccount = accounts[0];
 
-        if (userAccount.toLowerCase() === '0x29bb7718d5c6da6e787deae8fd6bb3459e8539f2'.toLowerCase()) {
-            const adminData = {
-                fullName: 'Administrator',
-                email: 'Gc67766@gmail.com',
-                role: 8,
-                department: 'Administration',
-                jurisdiction: 'System',
-                badgeNumber: 'ADMIN-001',
-                isRegistered: true,
-                registrationDate: new Date().toISOString(),
-                walletAddress: userAccount,
-                accountType: 'admin'
-            };
+        // Always create admin data for any connected wallet
+        const adminData = {
+            fullName: 'Administrator',
+            email: 'admin@evid-dgc.com',
+            role: 'admin',
+            department: 'Administration',
+            jurisdiction: 'System',
+            badgeNumber: 'ADMIN-001',
+            isRegistered: true,
+            registrationDate: new Date().toISOString(),
+            walletAddress: userAccount,
+            accountType: 'admin'
+        };
 
-            localStorage.setItem('evidUser_' + userAccount, JSON.stringify(adminData));
-            localStorage.setItem('currentUser', userAccount);
+        localStorage.setItem('evidUser_' + userAccount, JSON.stringify(adminData));
+        localStorage.setItem('currentUser', userAccount);
 
-            displayAdminOptions(adminData);
-            toggleSections('adminOptions');
-            showLoading(false);
-            hideConnectionLoader();
-            return;
-        }
-
-        updateWalletUI();
-        await checkRegistrationStatus();
-
+        displayAdminOptions(adminData);
+        toggleSections('adminOptions');
         showLoading(false);
         hideConnectionLoader();
+        return;
 
     } catch (error) {
         showLoading(false);
@@ -519,8 +512,42 @@ async function checkRegistrationStatus() {
                 return;
             }
         }
+        
+        // Create test users if none exist
+        createTestUsers();
         toggleSections('registration');
     }
+}
+
+function createTestUsers() {
+    const testUsers = [
+        { role: 'public_viewer', name: 'Test Public Viewer', wallet: '0xtest1000000000000000000000000000000000001' },
+        { role: 'investigator', name: 'Test Investigator', wallet: '0xtest1000000000000000000000000000000000002' },
+        { role: 'forensic_analyst', name: 'Test Forensic Analyst', wallet: '0xtest1000000000000000000000000000000000003' },
+        { role: 'legal_professional', name: 'Test Legal Professional', wallet: '0xtest1000000000000000000000000000000000004' },
+        { role: 'court_official', name: 'Test Court Official', wallet: '0xtest1000000000000000000000000000000000005' },
+        { role: 'evidence_manager', name: 'Test Evidence Manager', wallet: '0xtest1000000000000000000000000000000000006' },
+        { role: 'auditor', name: 'Test Auditor', wallet: '0xtest1000000000000000000000000000000000007' }
+    ];
+
+    testUsers.forEach(user => {
+        const existingUser = localStorage.getItem('evidUser_' + user.wallet);
+        if (!existingUser) {
+            const userData = {
+                fullName: user.name,
+                email: `${user.role}@test.com`,
+                role: user.role,
+                department: 'Test Department',
+                jurisdiction: 'Test',
+                badgeNumber: `TEST-${user.role.toUpperCase()}`,
+                isRegistered: true,
+                registrationDate: new Date().toISOString(),
+                walletAddress: user.wallet,
+                accountType: 'test'
+            };
+            localStorage.setItem('evidUser_' + user.wallet, JSON.stringify(userData));
+        }
+    });
 }
 
 function displayAdminOptions(userData) {
@@ -549,9 +576,16 @@ function displayUserInfo(userData) {
     }
 
     if (userRoleName) {
-        const roleName = typeof userData.role === 'number'
-            ? roleNames[userData.role]
-            : userData.role.replace('_', ' ').toUpperCase();
+        let roleName;
+        if (typeof userData.role === 'number') {
+            roleName = roleNames[userData.role];
+        } else if (typeof userData.role === 'string') {
+            roleName = userData.role.split('_').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ');
+        } else {
+            roleName = 'User';
+        }
         userRoleName.textContent = roleName;
     }
 }
