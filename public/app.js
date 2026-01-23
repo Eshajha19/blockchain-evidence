@@ -29,33 +29,43 @@ const roleMapping = {
 
 // Initialize application
 function initializeApp() {
-    lucide.createIcons();
-    initializeNavigation();
-    initializeScrollUp();
-    initializeRoleSelection();
-    initializeSections();
-    initializeParticles();
-    initializeFAQ();
+    console.log('Initializing EVID-DGC application...');
     
-    // Add click handler for wallet connection
-    const connectBtn = document.getElementById('connectWallet');
-    if (connectBtn) {
-        connectBtn.onclick = connectWallet;
-    }
-    
-    // Initialize forms
-    const registrationForm = document.getElementById('registrationForm');
-    if (registrationForm) {
-        registrationForm.addEventListener('submit', handleRegistration);
-    }
-    
-    const emailLoginForm = document.getElementById('emailLoginForm');
-    if (emailLoginForm) {
-        emailLoginForm.addEventListener('submit', handleEmailLogin);
+    try {
+        // Initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+        
+        // Initialize components
+        initializeNavigation();
+        initializeScrollUp();
+        initializeRoleSelection();
+        initializeSections();
+        initializeParticles();
+        initializeFAQ();
+        initializeEmailLogin();
+        
+        // Add click handler for wallet connection
+        const connectBtn = document.getElementById('connectWallet');
+        if (connectBtn) {
+            connectBtn.onclick = connectWallet;
+        }
+        
+        // Initialize forms
+        const registrationForm = document.getElementById('registrationForm');
+        if (registrationForm) {
+            registrationForm.addEventListener('submit', handleRegistration);
+        }
+        
+        console.log('Application initialized successfully');
+    } catch (error) {
+        console.error('Initialization error:', error);
+        showAlert('Application initialization failed. Please refresh the page.', 'error');
     }
 }
 
-// Missing navigation functions
+// Navigation functions
 function scrollToTop() {
     window.scrollTo({
         top: 0,
@@ -63,79 +73,50 @@ function scrollToTop() {
     });
 }
 
-function showEmailLogin() {
-    hideAllSections();
-    const emailSection = document.getElementById('emailLoginSection');
-    if (emailSection) {
-        emailSection.classList.remove('hidden');
-    }
-}
-
-function hideEmailLogin() {
-    const emailSection = document.getElementById('emailLoginSection');
-    if (emailSection) {
-        emailSection.classList.add('hidden');
-    }
-    showSection('login-options');
-}
-
-function hideAllSections() {
-    const sections = [
-        'walletStatus', 'registrationSection', 'alreadyRegisteredSection', 
-        'adminOptionsSection', 'emailLoginSection'
-    ];
-    sections.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-            element.classList.add('hidden');
-        }
-    });
-}
-
-function showSection(sectionId) {
+function scrollToSection(sectionId) {
     const element = document.getElementById(sectionId);
     if (element) {
-        element.classList.remove('hidden');
+        element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
     }
 }
 
-// FAQ functionality
-function initializeFAQ() {
-    const faqItems = document.querySelectorAll('.faq-item');
-    faqItems.forEach(item => {
-        const question = item.querySelector('.faq-question');
-        if (question) {
-            question.addEventListener('click', () => toggleFAQ(question));
-        }
-    });
-}
-
-function toggleFAQ(element) {
-    const faqItem = element.closest('.faq-item');
-    if (faqItem) {
-        faqItem.classList.toggle('active');
-        lucide.createIcons();
+// Email login functions
+function showEmailLogin() {
+    console.log('Showing email login modal...');
+    const modal = document.getElementById('emailLoginModal');
+    if (modal) {
+        modal.classList.add('active');
     }
 }
 
-// Particles animation
-function initializeParticles() {
-    const particlesContainer = document.getElementById('particles');
-    if (!particlesContainer) return;
-    
-    for (let i = 0; i < 50; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'particle';
-        particle.style.left = Math.random() * 100 + '%';
-        particle.style.animationDelay = Math.random() * 25 + 's';
-        particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
-        particlesContainer.appendChild(particle);
+function closeEmailLogin() {
+    const modal = document.getElementById('emailLoginModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+function showEmailRegistration() {
+    const modal = document.getElementById('emailRegistrationModal');
+    if (modal) {
+        modal.classList.add('active');
+    }
+}
+
+function closeEmailRegistration() {
+    const modal = document.getElementById('emailRegistrationModal');
+    if (modal) {
+        modal.classList.remove('active');
     }
 }
 
 // Email login handler
 function handleEmailLogin(event) {
     event.preventDefault();
+    console.log('Handling email login...');
     
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
@@ -145,14 +126,38 @@ function handleEmailLogin(event) {
         return;
     }
     
+    // Admin login check
+    if (email.toLowerCase() === 'gc67766@gmail.com' && password === '@Gopichand1@') {
+        const adminData = {
+            email: 'gc67766@gmail.com',
+            fullName: 'System Administrator',
+            role: 8,
+            department: 'Administration',
+            isRegistered: true,
+            walletAddress: '0x29bb7718d5c6da6e787deae8fd6bb3459e8539f2',
+            loginType: 'email',
+            accountType: 'admin'
+        };
+        
+        localStorage.setItem('emailUser_' + email, JSON.stringify(adminData));
+        localStorage.setItem('currentUser', 'email_' + email);
+        
+        showAlert('Admin login successful!', 'success');
+        closeEmailLogin();
+        displayAdminOptions(adminData);
+        toggleSections('adminOptions');
+        return;
+    }
+    
     // Check localStorage for email users
     const emailUserKey = 'emailUser_' + email;
     const userData = localStorage.getItem(emailUserKey);
     
     if (userData) {
         const user = JSON.parse(userData);
-        if (user.password === password) { // In production, use proper password hashing
+        if (user.password === password) {
             localStorage.setItem('currentUser', 'email_' + email);
+            closeEmailLogin();
             displayUserInfo(user);
             toggleSections('alreadyRegistered');
             showAlert('Login successful!', 'success');
@@ -164,370 +169,72 @@ function handleEmailLogin(event) {
     }
 }
 
-function initializeSections() {
-    // Hide all sections except wallet section on initial load
-    const sections = ['walletStatus', 'registrationSection', 'alreadyRegisteredSection', 'adminOptionsSection'];
-    sections.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-            element.classList.add('hidden');
-        }
-    });
-    
-    // Show only the wallet section
-    const walletSection = document.getElementById('walletSection');
-    if (walletSection) {
-        walletSection.classList.remove('hidden');
-    }
-}
+// Handle email registration
+function handleEmailRegistration(event) {
+    event.preventDefault();
+    console.log('Handling email registration...');
 
-function initializeLucideIcons() {
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
-}
-
-        async function initializeApp() {
-            // Simple initialization
-            lucide.createIcons();
-        }
-
-// Check registration status after wallet connection
-async function checkRegistrationStatus() {
-    if (!userAccount) {
-        showAlert('Please connect your wallet first', 'error');
-        return;
-    }
-    
-    const savedUser = localStorage.getItem('evidUser_' + userAccount);
-    
-    if (savedUser) {
-        const userData = JSON.parse(savedUser);
-        displayUserInfo(userData);
-        
-        // Check if user is admin
-        if (userData.role === 'admin' || userData.role === 8) {
-            displayAdminOptions(userData);
-            toggleSections('adminOptions');
-        } else {
-            toggleSections('alreadyRegistered');
-        }
-    } else {
-        // Create test users if none exist
-        createTestUsers();
-        toggleSections('registration');
-    }
-}
-
-function initializeNavigation() {
-    const menuToggle = document.getElementById('menuToggle');
-    const navMenu = document.getElementById('navMenu');
-
-    if (menuToggle && navMenu) {
-        menuToggle.addEventListener('click', () => {
-            navMenu.classList.toggle('active');
-
-            const icon = menuToggle.querySelector('i');
-            if (navMenu.classList.contains('active')) {
-                icon.setAttribute('data-lucide', 'x');
-            } else {
-                icon.setAttribute('data-lucide', 'menu');
-            }
-            lucide.createIcons();
-        });
-
-        const navLinks = navMenu.querySelectorAll('.nav-link');
-        navLinks.forEach(link => {
-            link.addEventListener('click', () => {
-                navMenu.classList.remove('active');
-                const icon = menuToggle.querySelector('i');
-                icon.setAttribute('data-lucide', 'menu');
-                lucide.createIcons();
-            });
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!menuToggle.contains(e.target) && !navMenu.contains(e.target)) {
-                navMenu.classList.remove('active');
-                const icon = menuToggle.querySelector('i');
-                icon.setAttribute('data-lucide', 'menu');
-                lucide.createIcons();
-            }
-        });
-    }
-}
-
-
-function initializeScrollUp() {
-    const scrollBtn = document.getElementById('scrollUpBtn');
-
-    if (scrollBtn) {
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 300) {
-                scrollBtn.classList.add('visible');
-            } else {
-                scrollBtn.classList.remove('visible');
-            }
-        });
-
-        scrollBtn.addEventListener('click', () => {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
-    }
-}
-
-function initializeRoleSelection() {
-    const roleCards = document.querySelectorAll('.role-card');
-    const userRoleInput = document.getElementById('userRole');
-    const comprehensiveFormContainer = document.getElementById('comprehensiveFormContainer');
-
-    roleCards.forEach(card => {
-        card.addEventListener('click', () => {
-            roleCards.forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-
-            const roleValue = parseInt(card.getAttribute('data-role'));
-            if (userRoleInput) {
-                userRoleInput.value = roleValue;
-            }
-
-            if (window.ComprehensiveRegistration && comprehensiveFormContainer) {
-                const formHTML = window.ComprehensiveRegistration.generateRegistrationForm(roleValue);
-                comprehensiveFormContainer.innerHTML = formHTML;
-                comprehensiveFormContainer.classList.remove('hidden');
-
-                if (typeof lucide !== 'undefined') {
-                    lucide.createIcons();
-                }
-
-                initializeComprehensiveForm();
-
-                if (userAccount) {
-                    const walletField = document.getElementById('walletAddress');
-                    if (walletField) {
-                        walletField.value = userAccount;
-                    }
-                }
-            }
-        });
-    });
-}
-
-function initializeComprehensiveForm() {
-    const form = document.getElementById('comprehensiveRegistrationForm');
-    if (!form) return;
-
-    const passwordField = document.getElementById('password');
-    if (passwordField) {
-        passwordField.addEventListener('input', updatePasswordStrength);
-    }
-
-    const confirmPasswordField = document.getElementById('confirmPassword');
-    if (confirmPasswordField) {
-        confirmPasswordField.addEventListener('input', validatePasswordMatch);
-    }
-
-    const usernameField = document.getElementById('username');
-    if (usernameField) {
-        usernameField.addEventListener('blur', checkUsernameUniqueness);
-    }
-
-    if (window.IndianAPIs) {
-        window.IndianAPIs.initializeIndianAutocomplete();
-    }
-
-    form.addEventListener('submit', handleComprehensiveRegistration);
-}
-
-function updatePasswordStrength() {
-    const password = document.getElementById('password').value;
-    const strengthFill = document.querySelector('.strength-fill');
-    const strengthText = document.querySelector('.strength-text');
-
-    if (!strengthFill || !strengthText) return;
-
-    let strength = 0;
-    let strengthLabel = 'Very Weak';
-
-    if (password.length >= 8) strength++;
-    if (/[a-z]/.test(password)) strength++;
-    if (/[A-Z]/.test(password)) strength++;
-    if (/[0-9]/.test(password)) strength++;
-    if (/[^A-Za-z0-9]/.test(password)) strength++;
-
-    strengthFill.className = 'strength-fill';
-    switch (strength) {
-        case 0:
-        case 1:
-            strengthFill.classList.add('weak');
-            strengthLabel = 'Weak';
-            break;
-        case 2:
-            strengthFill.classList.add('fair');
-            strengthLabel = 'Fair';
-            break;
-        case 3:
-        case 4:
-            strengthFill.classList.add('good');
-            strengthLabel = 'Good';
-            break;
-        case 5:
-            strengthFill.classList.add('strong');
-            strengthLabel = 'Strong';
-            break;
-    }
-
-    strengthText.textContent = `Password strength: ${strengthLabel}`;
-}
-
-function validatePasswordMatch() {
-    const password = document.getElementById('password').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-    const confirmField = document.getElementById('confirmPassword');
+    const email = document.getElementById('regEmail').value;
+    const password = document.getElementById('regPassword').value;
+    const confirmPassword = document.getElementById('regConfirmPassword').value;
+    const fullName = document.getElementById('regFullName').value;
+    const role = parseInt(document.getElementById('regRole').value);
 
     if (password !== confirmPassword) {
-        confirmField.setCustomValidity('Passwords do not match');
-    } else {
-        confirmField.setCustomValidity('');
-    }
-}
-
-async function checkUsernameUniqueness() {
-    const username = document.getElementById('username').value;
-    if (!username) return;
-
-    const existingUsers = Object.keys(localStorage).filter(key =>
-        key.startsWith('evidUser_') || key.startsWith('emailUser_')
-    );
-
-    let isUnique = true;
-    for (const userKey of existingUsers) {
-        try {
-            const userData = JSON.parse(localStorage.getItem(userKey));
-            if (userData.username === username) {
-                isUnique = false;
-                break;
-            }
-        } catch (e) {
-            // Ignore parsing errors
-        }
-    }
-
-    const usernameField = document.getElementById('username');
-    if (!isUnique) {
-        usernameField.setCustomValidity('Username already exists');
-        showAlert('Username already exists. Please choose another.', 'error');
-    } else {
-        usernameField.setCustomValidity('');
-    }
-}
-
-async function handleComprehensiveRegistration(event) {
-    event.preventDefault();
-
-    try {
-        showLoading(true, 'Processing registration...');
-
-        const formData = collectFormData();
-
-        if (!validateFormData(formData)) {
-            showLoading(false);
-            return;
-        }
-
-        const userData = {
-            ...formData,
-            isRegistered: true,
-            registrationDate: new Date().toISOString(),
-            walletAddress: userAccount,
-            verificationStatus: 'pending',
-            accountType: 'comprehensive'
-        };
-
-        const userKey = userAccount ? 'evidUser_' + userAccount : 'emailUser_' + formData.email;
-        localStorage.setItem(userKey, JSON.stringify(userData));
-        localStorage.setItem('currentUser', userAccount || 'email_' + formData.email);
-
-        showLoading(false);
-        showAlert('Registration submitted successfully!', 'success');
-
-        setTimeout(() => {
-            window.location.href = 'dashboard.html';
-        }, 2000);
-
-    } catch (error) {
-        console.error('Registration failed:', error);
-        showLoading(false);
-        showAlert('Registration failed. Please try again.', 'error');
-    }
-}
-
-function collectFormData() {
-    const formData = {};
-    const form = document.getElementById('comprehensiveRegistrationForm');
-
-    const inputs = form.querySelectorAll('input, select, textarea');
-    inputs.forEach(input => {
-        if (input.type === 'checkbox') {
-            if (input.name) {
-                if (!formData[input.name]) formData[input.name] = [];
-                if (input.checked) formData[input.name].push(input.value);
-            } else {
-                formData[input.id] = input.checked;
-            }
-        } else if (input.type !== 'submit') {
-            formData[input.id] = input.value;
-        }
-    });
-
-    return formData;
-}
-
-/**
- * Validate registration form values and show the first relevant error alert if validation fails.
- *
- * Checks that required fields (firstName, lastName, email, username, password) are present, that
- * password matches confirmPassword, and that termsAccepted and privacyAccepted are true. If a
- * validation rule fails the function shows an error alert describing the first failure.
- *
- * @param {Object} formData - Collected registration form values (expected keys include `firstName`, `lastName`, `email`, `username`, `password`, `confirmPassword`, `termsAccepted`, `privacyAccepted`).
- * @returns {boolean} `true` if all validations pass, `false` otherwise.
- */
-function validateFormData(formData) {
-    const requiredFields = ['firstName', 'lastName', 'email', 'username', 'password'];
-
-    for (const field of requiredFields) {
-        if (!formData[field]) {
-            showAlert(`${field.replace(/([A-Z])/g, ' $1').toLowerCase()} is required.`, 'error');
-            return false;
-        }
-    }
-
-    if (formData.password !== formData.confirmPassword) {
         showAlert('Passwords do not match.', 'error');
-        return false;
+        return;
     }
 
-    if (!formData.termsAccepted || !formData.privacyAccepted) {
-        showAlert('You must accept the Terms & Conditions and Privacy Policy.', 'error');
-        return false;
+    if (password.length < 6) {
+        showAlert('Password must be at least 6 characters.', 'error');
+        return;
     }
 
-    return true;
+    const existingUser = localStorage.getItem('emailUser_' + email);
+    if (existingUser) {
+        showAlert('Account already exists.', 'error');
+        return;
+    }
+
+    const userData = {
+        email,
+        password,
+        fullName,
+        role,
+        department: 'General',
+        jurisdiction: 'General',
+        isRegistered: true,
+        registrationDate: new Date().toISOString(),
+        loginType: 'email'
+    };
+
+    localStorage.setItem('emailUser_' + email, JSON.stringify(userData));
+    localStorage.setItem('currentUser', 'email_' + email);
+
+    showAlert('Registration successful!', 'success');
+    closeEmailRegistration();
+
+    setTimeout(() => {
+        window.location.href = 'dashboard.html';
+    }, 1500);
 }
 
-/**
- * Connects the user's Ethereum wallet, updates the UI, and checks or creates the user's registration state.
- *
- * Performs network and provider availability checks, handles a demo fallback, prompts to install MetaMask if absent,
- * requests account access, enforces the configured target network, handles a special admin wallet shortcut,
- * updates the wallet display, and launches the registration status flow. Displays contextual error modals for
- * common wallet/provider failures.
- */
+// Initialize email login functionality
+function initializeEmailLogin() {
+    const emailLoginForm = document.getElementById('emailLoginForm');
+    if (emailLoginForm) {
+        emailLoginForm.addEventListener('submit', handleEmailLogin);
+    }
+    
+    const emailRegForm = document.getElementById('emailRegistrationForm');
+    if (emailRegForm) {
+        emailRegForm.addEventListener('submit', handleEmailRegistration);
+    }
+}
+
+// Wallet connection
 async function connectWallet() {
+    console.log('Attempting to connect wallet...');
     closeErrorModal();
 
     if (!navigator.onLine) {
@@ -537,22 +244,19 @@ async function connectWallet() {
 
     try {
         showLoading(true);
-        const loader = document.getElementById('loader');
-        if (loader) loader.classList.remove('hidden');
 
         if (!window.ethereum) {
-            if (config.DEMO_MODE) {
+            if (config && config.DEMO_MODE) {
+                console.log('Demo mode: Using mock wallet');
                 userAccount = '0x1234567890123456789012345678901234567890';
                 await new Promise(resolve => setTimeout(resolve, 1500));
                 updateWalletUI();
                 await checkRegistrationStatus();
                 showLoading(false);
-                hideConnectionLoader();
                 return;
             }
 
             showLoading(false);
-            hideConnectionLoader();
             showErrorModal(
                 'MetaMask Not Found',
                 'MetaMask is not installed. Please install it to use this application.',
@@ -562,54 +266,35 @@ async function connectWallet() {
             return;
         }
 
-        if (config.TARGET_CHAIN_ID && !(await checkNetwork())) {
-            showLoading(false);
-            hideConnectionLoader();
-            return;
-        }
-
         const accounts = await window.ethereum.request({
             method: 'eth_requestAccounts'
         });
 
         if (accounts.length === 0) {
             showLoading(false);
-            hideConnectionLoader();
             showErrorModal('Account Access Required', 'Please unlock your MetaMask wallet and select an account.');
             return;
         }
 
         userAccount = accounts[0];
+        console.log('Wallet connected:', userAccount);
         
-        // Mark as connected for future auto-connection
         localStorage.setItem('wasConnected', 'true');
-
-
+        
+        updateWalletUI();
+        await checkRegistrationStatus();
+        showLoading(false);
 
     } catch (error) {
         showLoading(false);
-        hideConnectionLoader();
         console.error('Wallet connection error:', error);
 
         if (error.code === 4001) {
             showErrorModal('Connection Rejected', 'You rejected the connection request. This app requires a wallet connection to function.', 'Try Again', connectWallet);
-        } else if (error.code === 4100) {
-            showErrorModal('Unauthorized', 'The requested method and/or account has not been authorized by the user. Please check your MetaMask settings.');
-        } else if (error.code === 4900) {
-            showErrorModal('Disconnected', 'The connection to the blockchain has been lost. Please check your internet connection or MetaMask status.');
-        } else if (error.code === -32002) {
-            showErrorModal('Check MetaMask', 'A connection request is already pending. Please check your MetaMask extension popups.');
-        } else if (error.code === -32603) {
-            showErrorModal('Internal Error', 'MetaMask encountered an internal error. Please try resetting your MetaMask account or restarting the browser.');
         } else {
             showErrorModal('Connection Failed', error.message || 'An unexpected error occurred.');
         }
     }
-}
-
-function hideConnectionLoader() {
-    const loader = document.getElementById('loader');
-    if (loader) loader.classList.add('hidden');
 }
 
 function updateWalletUI() {
@@ -633,26 +318,30 @@ function updateWalletUI() {
     }
 }
 
+// Check registration status
 async function checkRegistrationStatus() {
+    console.log('Checking registration status for:', userAccount);
+    
+    if (!userAccount) {
+        showAlert('Please connect your wallet first', 'error');
+        return;
+    }
+    
     const savedUser = localStorage.getItem('evidUser_' + userAccount);
-
+    
     if (savedUser) {
         const userData = JSON.parse(savedUser);
+        console.log('Found existing user:', userData);
         displayUserInfo(userData);
-        toggleSections('alreadyRegistered');
-    } else {
-        const currentUser = localStorage.getItem('currentUser');
-        if (currentUser && currentUser.startsWith('email_')) {
-            const emailUser = localStorage.getItem('evidUser_' + currentUser);
-            if (emailUser) {
-                const userData = JSON.parse(emailUser);
-                displayUserInfo(userData);
-                toggleSections('alreadyRegistered');
-                return;
-            }
-        }
         
-        // Create test users if none exist
+        if (userData.role === 'admin' || userData.role === 8) {
+            displayAdminOptions(userData);
+            toggleSections('adminOptions');
+        } else {
+            toggleSections('alreadyRegistered');
+        }
+    } else {
+        console.log('No existing user found, creating test users and showing registration');
         createTestUsers();
         toggleSections('registration');
     }
@@ -702,10 +391,6 @@ function displayAdminOptions(userData) {
     }
 }
 
-function goToAdminDashboard() {
-    window.location.href = 'admin.html';
-}
-
 function displayUserInfo(userData) {
     const userName = document.getElementById('userName');
     const userRoleName = document.getElementById('userRoleName');
@@ -740,6 +425,7 @@ function toggleSections(active) {
     });
 }
 
+// Registration handler
 async function handleRegistration(event) {
     event.preventDefault();
 
@@ -781,22 +467,13 @@ async function handleRegistration(event) {
     }
 }
 
-async function goToDashboard() {
+// Navigation functions
+function goToDashboard() {
     window.location.href = 'dashboard.html';
 }
 
-function getUserRole() {
-    if (!userAccount) return null;
-
-    const savedUser = localStorage.getItem('evidUser_' + userAccount);
-    if (savedUser) {
-        const userData = JSON.parse(savedUser);
-        return typeof userData.role === 'number'
-            ? roleNames[userData.role]
-            : userData.role;
-    }
-
-    return null;
+function goToAdminDashboard() {
+    window.location.href = 'admin.html';
 }
 
 function logout() {
@@ -814,7 +491,6 @@ function logout() {
         lucide.createIcons();
     }
 
-    // Reset to initial state
     initializeSections();
     showAlert('Logged out successfully', 'info');
 }
@@ -834,15 +510,137 @@ function disconnectWallet() {
         lucide.createIcons();
     }
 
-    // Reset to initial state
     initializeSections();
     showAlert('Wallet disconnected successfully', 'info');
 }
 
-function showLoading(show) {
-    // Disabled - no loading modal
+// Initialize sections
+function initializeSections() {
+    const sections = ['walletStatus', 'registrationSection', 'alreadyRegisteredSection', 'adminOptionsSection'];
+    sections.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.classList.add('hidden');
+        }
+    });
+    
+    const walletSection = document.getElementById('walletSection');
+    if (walletSection) {
+        walletSection.classList.remove('hidden');
+    }
 }
 
+// Initialize navigation
+function initializeNavigation() {
+    const menuToggle = document.getElementById('menuToggle');
+    const navMenu = document.getElementById('navMenu');
+
+    if (menuToggle && navMenu) {
+        menuToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+
+            const icon = menuToggle.querySelector('i');
+            if (navMenu.classList.contains('active')) {
+                icon.setAttribute('data-lucide', 'x');
+            } else {
+                icon.setAttribute('data-lucide', 'menu');
+            }
+            lucide.createIcons();
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!menuToggle.contains(e.target) && !navMenu.contains(e.target)) {
+                navMenu.classList.remove('active');
+                const icon = menuToggle.querySelector('i');
+                icon.setAttribute('data-lucide', 'menu');
+                lucide.createIcons();
+            }
+        });
+    }
+}
+
+// Initialize scroll up button
+function initializeScrollUp() {
+    const scrollBtn = document.getElementById('scrollUpBtn');
+
+    if (scrollBtn) {
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                scrollBtn.classList.add('visible');
+            } else {
+                scrollBtn.classList.remove('visible');
+            }
+        });
+
+        scrollBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    }
+}
+
+// Initialize role selection
+function initializeRoleSelection() {
+    const roleCards = document.querySelectorAll('.role-card');
+    const userRoleInput = document.getElementById('userRole');
+
+    roleCards.forEach(card => {
+        card.addEventListener('click', () => {
+            roleCards.forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+
+            const roleValue = parseInt(card.getAttribute('data-role'));
+            if (userRoleInput) {
+                userRoleInput.value = roleValue;
+            }
+        });
+    });
+}
+
+// Initialize particles
+function initializeParticles() {
+    const particlesContainer = document.getElementById('particles');
+    if (!particlesContainer) return;
+    
+    for (let i = 0; i < 50; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 25 + 's';
+        particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
+        particlesContainer.appendChild(particle);
+    }
+}
+
+// Initialize FAQ
+function initializeFAQ() {
+    const faqItems = document.querySelectorAll('.faq-item');
+    faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question');
+        if (question) {
+            question.addEventListener('click', () => {
+                item.classList.toggle('active');
+                lucide.createIcons();
+            });
+        }
+    });
+}
+
+// Loading functions
+function showLoading(show, message = 'Loading...') {
+    const loader = document.getElementById('loader');
+    if (loader) {
+        if (show) {
+            loader.classList.remove('hidden');
+        } else {
+            loader.classList.add('hidden');
+        }
+    }
+}
+
+// Alert system
 function showAlert(message, type = 'info') {
     const existingAlerts = document.querySelectorAll('.alert');
     existingAlerts.forEach(alert => alert.remove());
@@ -881,34 +679,7 @@ function getAlertIcon(type) {
     return icons[type] || 'info';
 }
 
-/**
- * Scrolls the page smoothly to the element with the given ID.
- * @param {string} sectionId - The ID of the target DOM element; does nothing if no element with that ID exists.
- */
-function scrollToSection(sectionId) {
-    const element = document.getElementById(sectionId);
-    if (element) {
-        element.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-        });
-    }
-}
-
-// Error Handling & Network Helpers
-/**
- * Display an error modal with a title, HTML description, and an optional action button.
- *
- * If the expected modal elements exist in the DOM, the function populates the title and
- * description, shows or hides the action button based on `actionText`/`actionCallback`,
- * and activates the modal. If modal elements are missing, falls back to calling
- * `showAlert` with a combined error message.
- *
- * @param {string} title - The modal title text.
- * @param {string} description - The modal description; may include HTML.
- * @param {string|null} [actionText=null] - Text for the optional action button; when null the button is hidden.
- * @param {Function|null} [actionCallback=null] - Callback invoked when the action button is clicked.
- */
+// Error modal functions
 function showErrorModal(title, description, actionText = null, actionCallback = null) {
     const modal = document.getElementById('errorModal');
     const titleEl = document.getElementById('errorTitle');
@@ -932,54 +703,12 @@ function showErrorModal(title, description, actionText = null, actionCallback = 
     }
 }
 
-/**
- * Closes the error modal if it exists in the DOM.
- *
- * Locates the element with id "errorModal" and removes its "active" class to hide it.
- */
 function closeErrorModal() {
     const modal = document.getElementById('errorModal');
     if (modal) modal.classList.remove('active');
 }
 
-/**
- * Ensure the connected wallet is on the configured target network.
- *
- * If no Ethereum provider is present or the wallet's chain ID does not match the configured TARGET_CHAIN_ID,
- * a modal is shown prompting the user to switch networks and offering an action that attempts to switch the wallet's chain.
- * If the switch action fails or the network is not available in the wallet, appropriate error modals are displayed.
- *
- * @returns {Promise<boolean>} `true` if the wallet is on the target network, `false` otherwise.
- */
-async function checkNetwork() {
-    if (!window.ethereum) return false;
-    const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
-    if (currentChainId.toLowerCase() !== config.TARGET_CHAIN_ID.toLowerCase()) {
-        showErrorModal(
-            'Wrong Network',
-            `Please switch your wallet to <strong>${config.NETWORK_NAME}</strong> to continue.`,
-            `Switch to ${config.NETWORK_NAME}`,
-            async () => {
-                try {
-                    await window.ethereum.request({
-                        method: 'wallet_switchEthereumChain',
-                        params: [{ chainId: config.TARGET_CHAIN_ID }],
-                    });
-                    closeErrorModal();
-                } catch (switchError) {
-                    if (switchError.code === 4902) {
-                        showErrorModal('Network Not Found', `The ${config.NETWORK_NAME} is not added to your MetaMask. Please add it manually.`);
-                    } else {
-                        showErrorModal('Switch Failed', 'Failed to switch network. Please try explicitly from your wallet.');
-                    }
-                }
-            }
-        );
-        return false;
-    }
-    return true;
-}
-
+// Ethereum event listeners
 if (window.ethereum) {
     window.ethereum.on('accountsChanged', (accounts) => {
         if (accounts.length === 0) {
@@ -994,28 +723,20 @@ if (window.ethereum) {
     });
 }
 
+// Global exports
 window.EVID_DGC = {
     connectWallet,
     disconnectWallet,
     logout,
     showAlert,
-    scrollToSection,
-    getUserRole
+    scrollToSection
 };
 
-// Initialize application when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    initializeApp();
-});
-
-// Global error handler
+// Global error handlers
 window.addEventListener('error', function(event) {
     console.error('Global error:', event.error);
-    showAlert('An unexpected error occurred. Please refresh the page.', 'error');
 });
 
-// Unhandled promise rejection handler
 window.addEventListener('unhandledrejection', function(event) {
     console.error('Unhandled promise rejection:', event.reason);
-    showAlert('A network error occurred. Please check your connection.', 'error');
 });

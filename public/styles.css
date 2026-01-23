@@ -865,7 +865,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(220, 38, 38, 0.3);
+    background: rgba(0, 0, 0, 0.5);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -907,6 +907,13 @@ body {
     border-bottom: 1px solid var(--border-light);
 }
 
+.modal-header h3 {
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+}
+
 .modal-close {
     background: none;
     border: none;
@@ -914,10 +921,17 @@ body {
     padding: 8px;
     border-radius: 6px;
     transition: background 0.2s ease;
+    color: var(--text-muted);
 }
 
 .modal-close:hover {
     background: var(--primary-red-light);
+    color: var(--primary-red);
+}
+
+.modal-close i {
+    width: 20px;
+    height: 20px;
 }
 
 /* Admin Styles */
