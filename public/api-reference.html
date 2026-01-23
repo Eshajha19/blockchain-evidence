@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Reference - EVID-DGC</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" sizes="32x32" href="logo-32x32.png" type="image/png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #ffffff 0%, #fef2f2 50%, #dc2626 100%);
+            background-attachment: fixed;
+            color: #8B0000;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 30px;
+        }
+        .sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 12px;
+            height: fit-content;
+            box-shadow: 0 8px 32px rgba(220, 38, 38, 0.1);
+            border: 1px solid rgba(220, 38, 38, 0.2);
+        }
+        .sidebar h3 {
+            margin-bottom: 15px;
+            color: #D32F2F;
+        }
+        .sidebar ul {
+            list-style: none;
+        }
+        .sidebar li {
+            margin-bottom: 10px;
+        }
+        .sidebar a {
+            color: #B22222;
+            text-decoration: none;
+            display: block;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .sidebar a:hover {
+            background: #FFEBEE;
+            color: #D32F2F;
+        }
+        .main-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(220, 38, 38, 0.1);
+            border: 1px solid rgba(220, 38, 38, 0.2);
+        }
+        .breadcrumb {
+            font-size: 14px;
+            color: #DC143C;
+            margin-bottom: 20px;
+        }
+        .breadcrumb a {
+            color: #D32F2F;
+            text-decoration: none;
+        }
+        h1 {
+            color: #D32F2F;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        .subtitle {
+            color: #B22222;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        h2 {
+            color: #8B0000;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-left: 4px solid #D32F2F;
+            padding-left: 15px;
+        }
+        .endpoint {
+            background: rgba(255, 235, 238, 0.8);
+            backdrop-filter: blur(5px);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #2E7D32;
+            border: 1px solid rgba(220, 38, 38, 0.2);
+        }
+        .method {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 12px;
+            margin-right: 10px;
+        }
+        .method.get {
+            background: #E3F2FD;
+            color: #1976D2;
+        }
+        .method.post {
+            background: #F3E5F5;
+            color: #7B1FA2;
+        }
+        .method.put {
+            background: #FFF3E0;
+            color: #E65100;
+        }
+        .method.delete {
+            background: #FFEBEE;
+            color: #C62828;
+        }
+        .endpoint-path {
+            font-family: monospace;
+            font-size: 14px;
+            background: #8B0000;
+            color: #00FF00;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        pre {
+            background: rgba(255, 235, 238, 0.6);
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 12px;
+            border-left: 4px solid #D32F2F;
+        }
+        code {
+            font-family: 'Courier New', monospace;
+            background: rgba(255, 235, 238, 0.6);
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 8px 15px;
+            background: #D32F2F;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 16px rgba(220, 38, 38, 0.15);
+        }
+        .back-button:hover {
+            background: #C41C3B;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(220, 38, 38, 0.2);
+        }
+        .logo {
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #D32F2F;
+        }
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">📚 EVID-DGC Docs</div>
+            <h3>Documentation</h3>
+            <ul>
+                <li><a href="quickstart.html">Quick Start</a></li>
+                <li><a href="user-roles.html">User Roles</a></li>
+                <li><a href="api-reference.html" style="color: #D32F2F; font-weight: bold;">API Reference</a></li>
+                <li><a href="troubleshooting.html">Troubleshooting</a></li>
+            </ul>
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+            <h3>Help</h3>
+            <ul>
+                <li><a href="index.html">← Back to Home</a></li>
+                <li><a href="mailto:DGC2MHNE@proton.me">Contact Support</a></li>
+            </ul>
+        </div>
+        <div class="main-content">
+            <a href="index.html" class="back-button">← Back to Home</a>
+            <div class="breadcrumb">
+                <a href="index.html">Home</a> > <a href="api-reference.html">Docs</a> > API Reference
+            </div>
+            <h1>API Reference</h1>
+            <p class="subtitle">Complete API Documentation for Developers</p>
+
+            <p>This API documentation allows developers to integrate with the EVID-DGC system. All endpoints require proper authentication.</p>
+
+            <h2>Authentication Endpoints</h2>
+
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <span>/api/auth/login</span>
+                <div class="endpoint-path">POST /api/auth/login</div>
+                <p><strong>Description:</strong> Login with email and password</p>
+                <p><strong>Request Body:</strong></p>
+                <pre><code>{
+  "email": "user@example.com",
+  "password": "your_password"
+}</code></pre>
+                <p><strong>Response:</strong></p>
+                <pre><code>{
+  "success": true,
+  "data": {
+    "token": "jwt_token_here",
+    "user": {
+      "id": "user_id",
+      "email": "user@example.com",
+      "role": "investigator"
+    }
+  }
+}</code></pre>
+                <p><strong>Status Codes:</strong> 200 (Success), 401 (Invalid credentials), 400 (Bad request)</p>
+            </div>
+
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <span>/api/auth/wallet-connect</span>
+                <div class="endpoint-path">POST /api/auth/wallet-connect</div>
+                <p><strong>Description:</strong> Connect MetaMask wallet for blockchain authentication</p>
+                <p><strong>Request Body:</strong></p>
+                <pre><code>{
+  "walletAddress": "0x...",
+  "signature": "signature_from_metamask"
+}</code></pre>
+                <p><strong>Status Codes:</strong> 200 (Success), 401 (Invalid signature), 400 (Bad request)</p>
+            </div>
+
+            <h2>Case Endpoints</h2>
+
+            <div class="endpoint">
+                <span class="method get">GET</span>
+                <span>/api/cases</span>
+                <div class="endpoint-path">GET /api/cases?page=1&limit=10&status=open</div>
+                <p><strong>Description:</strong> Get all cases (filtered by user role)</p>
+                <p><strong>Query Parameters:</strong> page, limit, status</p>
+                <p><strong>Response:</strong></p>
+                <pre><code>{
+  "success": true,
+  "data": {
+    "cases": [{...}, {...}],
+    "total": 50,
+    "pages": 5
+  }
+}</code></pre>
+                <p><strong>Status Codes:</strong> 200 (Success), 401 (Unauthorized)</p>
+            </div>
+
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <span>/api/cases</span>
+                <div class="endpoint-path">POST /api/cases</div>
+                <p><strong>Description:</strong> Create new case</p>
+                <p><strong>Request Body:</strong></p>
+                <pre><code>{
+  "title": "Case Title",
+  "description": "Case description",
+  "jurisdiction": "City, State",
+  "caseNumber": "2025-001"
+}</code></pre>
+                <p><strong>Status Codes:</strong> 201 (Created), 401 (Unauthorized), 400 (Bad request)</p>
+            </div>
+
+            <h2>Evidence Endpoints</h2>
+
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <span>/api/evidence/upload</span>
+                <div class="endpoint-path">POST /api/evidence/upload</div>
+                <p><strong>Description:</strong> Upload evidence file to case</p>
+                <p><strong>Content-Type:</strong> multipart/form-data</p>
+                <p><strong>Form Fields:</strong> file, caseId, description, type</p>
+                <p><strong>Response:</strong></p>
+                <pre><code>{
+  "success": true,
+  "data": {
+    "evidence": {...},
+    "hash": "sha256_hash",
+    "blockchainTx": "transaction_id"
+  }
+}</code></pre>
+                <p><strong>Status Codes:</strong> 201 (Created), 413 (File too large), 401 (Unauthorized)</p>
+            </div>
+
+            <div class="endpoint">
+                <span class="method get">GET</span>
+                <span>/api/evidence/:caseId</span>
+                <div class="endpoint-path">GET /api/evidence/:caseId</div>
+                <p><strong>Description:</strong> Get all evidence for a case</p>
+                <p><strong>Status Codes:</strong> 200 (Success), 404 (Not found)</p>
+            </div>
+
+            <h2>Error Responses</h2>
+
+            <p>All errors follow this format:</p>
+            <pre><code>{
+  "success": false,
+  "error": "ERROR_CODE",
+  "message": "Human readable error message",
+  "code": 400
+}</code></pre>
+
+            <p><strong>Common Error Codes:</strong></p>
+            <ul>
+                <li>400: Bad Request - Invalid parameters</li>
+                <li>401: Unauthorized - Authentication required</li>
+                <li>403: Forbidden - Insufficient permissions</li>
+                <li>404: Not Found - Resource doesn't exist</li>
+                <li>409: Conflict - Resource already exists</li>
+                <li>413: Payload Too Large - File too large</li>
+                <li>500: Internal Server Error - Server error</li>
+            </ul>
+
+            <hr style="margin: 40px 0; border: none; border-top: 1px solid #ddd;">
+            <p style="text-align: center; color: #999; font-size: 14px; margin-top: 40px;">
+                Need help? Contact us at <strong>DGC2MHNE@proton.me</strong>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

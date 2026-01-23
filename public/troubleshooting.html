@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Troubleshooting - EVID-DGC</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" sizes="32x32" href="logo-32x32.png" type="image/png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #ffffff 0%, #fef2f2 50%, #dc2626 100%);
+            background-attachment: fixed;
+            color: #8B0000;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 30px;
+        }
+        .sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 12px;
+            height: fit-content;
+            box-shadow: 0 8px 32px rgba(220, 38, 38, 0.1);
+            border: 1px solid rgba(220, 38, 38, 0.2);
+        }
+        .sidebar h3 {
+            margin-bottom: 15px;
+            color: #D32F2F;
+        }
+        .sidebar ul {
+            list-style: none;
+        }
+        .sidebar li {
+            margin-bottom: 10px;
+        }
+        .sidebar a {
+            color: #B22222;
+            text-decoration: none;
+            display: block;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .sidebar a:hover {
+            background: #FFEBEE;
+            color: #D32F2F;
+        }
+        .main-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(220, 38, 38, 0.1);
+            border: 1px solid rgba(220, 38, 38, 0.2);
+        }
+        .breadcrumb {
+            font-size: 14px;
+            color: #DC143C;
+            margin-bottom: 20px;
+        }
+        .breadcrumb a {
+            color: #D32F2F;
+            text-decoration: none;
+        }
+        h1 {
+            color: #D32F2F;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        .subtitle {
+            color: #B22222;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        h2 {
+            color: #8B0000;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-left: 4px solid #D32F2F;
+            padding-left: 15px;
+        }
+        .problem {
+            background: rgba(255, 235, 238, 0.8);
+            backdrop-filter: blur(5px);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #D32F2F;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid rgba(220, 38, 38, 0.2);
+        }
+        .problem:hover {
+            box-shadow: 0 8px 32px rgba(220, 38, 38, 0.15);
+            transform: translateY(-2px);
+        }
+        .problem.active {
+            background: rgba(255, 205, 210, 0.9);
+            border-color: #D32F2F;
+        }
+        .problem-title {
+            font-weight: bold;
+            color: #D32F2F;
+            font-size: 16px;
+        }
+        .problem-symptoms {
+            color: #B22222;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .solutions {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(220, 38, 38, 0.3);
+        }
+        .problem.active .solutions {
+            display: block;
+        }
+        .solutions ol {
+            margin-left: 20px;
+        }
+        .solutions li {
+            margin-bottom: 8px;
+            color: #B22222;
+        }
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 8px 15px;
+            background: #D32F2F;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 16px rgba(220, 38, 38, 0.15);
+        }
+        .back-button:hover {
+            background: #C41C3B;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(220, 38, 38, 0.2);
+        }
+        .logo {
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #D32F2F;
+        }
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">📚 EVID-DGC Docs</div>
+            <h3>Documentation</h3>
+            <ul>
+                <li><a href="quickstart.html">Quick Start</a></li>
+                <li><a href="user-roles.html">User Roles</a></li>
+                <li><a href="api-reference.html">API Reference</a></li>
+                <li><a href="troubleshooting.html" style="color: #D32F2F; font-weight: bold;">Troubleshooting</a></li>
+            </ul>
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+            <h3>Help</h3>
+            <ul>
+                <li><a href="index.html">← Back to Home</a></li>
+                <li><a href="mailto:DGC2MHNE@proton.me">Contact Support</a></li>
+            </ul>
+        </div>
+        <div class="main-content">
+            <a href="index.html" class="back-button">← Back to Home</a>
+            <div class="breadcrumb">
+                <a href="index.html">Home</a> > <a href="troubleshooting.html">Docs</a> > Troubleshooting
+            </div>
+            <h1>Troubleshooting</h1>
+            <p class="subtitle">Common Issues and Solutions</p>
+
+            <div class="problem" onclick="this.classList.toggle('active')">
+                <div class="problem-title">🔴 Problem 1: MetaMask Not Connecting</div>
+                <div class="problem-symptoms">Symptoms: "Connect MetaMask" button doesn't work or shows error</div>
+                <div class="solutions">
+                    <strong>Solutions:</strong>
+                    <ol>
+                        <li>Ensure MetaMask extension is installed and enabled</li>
+                        <li>Check browser extensions (Settings > Extensions)</li>
+                        <li>Click MetaMask icon in toolbar - it should open</li>
+                        <li>Try refreshing the page (F5 or Cmd+R)</li>
+                        <li>Try disconnecting and reconnecting the wallet</li>
+                        <li>Clear browser cache and cookies</li>
+                        <li>Try a different browser (Chrome, Firefox, Safari, Edge)</li>
+                        <li>Restart your browser completely</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="problem" onclick="this.classList.toggle('active')">
+                <div class="problem-title">🔴 Problem 2: "Failed to Load Dashboard" Error</div>
+                <div class="problem-symptoms">Symptoms: Error message on login, then dashboard loads</div>
+                <div class="solutions">
+                    <strong>Solutions:</strong>
+                    <ol>
+                        <li>This is usually temporary - wait a moment</li>
+                        <li>Click "OK" on error and continue</li>
+                        <li>If persists, refresh the page</li>
+                        <li>Clear browser cache (Ctrl+Shift+Delete)</li>
+                        <li>Try incognito/private browsing mode</li>
+                        <li>Check internet connection speed</li>
+                        <li>Try logging out and back in</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="problem" onclick="this.classList.toggle('active')">
+                <div class="problem-title">🔴 Problem 3: Evidence Upload Failing</div>
+                <div class="problem-symptoms">Symptoms: Upload button doesn't work or upload fails</div>
+                <div class="solutions">
+                    <strong>Solutions:</strong>
+                    <ol>
+                        <li>Check file size (maximum 100MB)</li>
+                        <li>Verify file type is supported (images, videos, documents, audio)</li>
+                        <li>Check internet connection speed</li>
+                        <li>Try uploading smaller file first</li>
+                        <li>Try different browser</li>
+                        <li>Disable ad blockers and extensions</li>
+                        <li>Check available storage on device</li>
+                        <li>Make sure case is created before uploading</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="problem" onclick="this.classList.toggle('active')">
+                <div class="problem-title">🔴 Problem 4: Cases Not Showing in Dashboard</div>
+                <div class="problem-symptoms">Symptoms: No cases visible even though cases exist</div>
+                <div class="solutions">
+                    <strong>Solutions:</strong>
+                    <ol>
+                        <li>Make sure case status is "Public" or you have permission</li>
+                        <li>Check your user role has case access</li>
+                        <li>Refresh the page (F5)</li>
+                        <li>Clear browser cache</li>
+                        <li>Try different browser</li>
+                        <li>Check if cases are for your department/jurisdiction</li>
+                        <li>Log out and back in</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="problem" onclick="this.classList.toggle('active')">
+                <div class="problem-title">🟠 Problem 5: Analysis Tools Not Working</div>
+                <div class="problem-symptoms">Symptoms: Tools don't run or show error</div>
+                <div class="solutions">
+                    <strong>Solutions:</strong>
+                    <ol>
+                        <li>Upload evidence first - tools need data to analyze</li>
+                        <li>Check browser console for errors (F12 > Console)</li>
+                        <li>Reload page and try again</li>
+                        <li>Check if your role has analysis permissions</li>
+                        <li>Try different browser</li>
+                        <li>Disable browser extensions</li>
+                        <li>Check internet connection</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="problem" onclick="this.classList.toggle('active')">
+                <div class="problem-title">🟠 Problem 6: Wallet Address Not Recognized</div>
+                <div class="problem-symptoms">Symptoms: System says wallet is not registered or asks to register</div>
+                <div class="solutions">
+                    <strong>Solutions:</strong>
+                    <ol>
+                        <li>Ensure connected to correct blockchain network</li>
+                        <li>Disconnect and reconnect wallet</li>
+                        <li>Check wallet address is spelled correctly</li>
+                        <li>Try different browser</li>
+                        <li>Clear browser cache</li>
+                        <li>Contact administrator to verify wallet is registered</li>
+                        <li>Make sure you have the correct MetaMask account selected</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="problem" onclick="this.classList.toggle('active')">
+                <div class="problem-title">🟠 Problem 7: Can't Access Admin Features</div>
+                <div class="problem-symptoms">Symptoms: Admin buttons/pages don't appear</div>
+                <div class="solutions">
+                    <strong>Solutions:</strong>
+                    <ol>
+                        <li>Confirm your user role is "Administrator" (role 8)</li>
+                        <li>Contact system administrator to verify permissions</li>
+                        <li>Check if logged in properly</li>
+                        <li>Try logging out and back in</li>
+                        <li>Clear browser cache</li>
+                        <li>Try different browser</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="problem" onclick="this.classList.toggle('active')">
+                <div class="problem-title">🟡 Problem 8: Can't Download Evidence</div>
+                <div class="problem-symptoms">Symptoms: Download button doesn't work or download incomplete</div>
+                <div class="solutions">
+                    <strong>Solutions:</strong>
+                    <ol>
+                        <li>Check browser download settings</li>
+                        <li>Check file permissions</li>
+                        <li>Try different browser</li>
+                        <li>Check available disk space</li>
+                        <li>Disable ad blockers</li>
+                        <li>Try downloading from different location</li>
+                        <li>Refresh page and try again</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="problem" onclick="this.classList.toggle('active')">
+                <div class="problem-title">🟡 Problem 9: Search Not Finding Cases</div>
+                <div class="problem-symptoms">Symptoms: Search returns no results</div>
+                <div class="solutions">
+                    <strong>Solutions:</strong>
+                    <ol>
+                        <li>Try different search keywords</li>
+                        <li>Make sure cases you're searching for exist</li>
+                        <li>Check case status is "Public" or you have access</li>
+                        <li>Search for case number instead of title</li>
+                        <li>Refresh page and try again</li>
+                        <li>Clear search and try again</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="problem" onclick="this.classList.toggle('active')">
+                <div class="problem-title">🟡 Problem 10: PDF Report Generation Failing</div>
+                <div class="problem-symptoms">Symptoms: Report download doesn't work or times out</div>
+                <div class="solutions">
+                    <strong>Solutions:</strong>
+                    <ol>
+                        <li>Close other browser tabs to free up memory</li>
+                        <li>Try with different browser</li>
+                        <li>Check internet connection speed</li>
+                        <li>Clear browser cache</li>
+                        <li>Try generating smaller report first</li>
+                        <li>Wait longer for generation to complete</li>
+                        <li>Contact support with error details</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="problem" onclick="this.classList.toggle('active')">
+                <div class="problem-title">🟡 Problem 11: Login Not Working</div>
+                <div class="problem-symptoms">Symptoms: Can't login with email/password</div>
+                <div class="solutions">
+                    <strong>Solutions:</strong>
+                    <ol>
+                        <li>Check email address is correct</li>
+                        <li>Verify password is correct (case-sensitive)</li>
+                        <li>Try resetting password (forgot password link)</li>
+                        <li>Clear browser cache</li>
+                        <li>Try different browser</li>
+                        <li>Try incognito mode</li>
+                        <li>Disable VPN if using one</li>
+                        <li>Contact administrator if account locked</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="problem" onclick="this.classList.toggle('active')">
+                <div class="problem-title">🟡 Problem 12: File Upload Taking Too Long</div>
+                <div class="problem-symptoms">Symptoms: Upload progress stuck or very slow</div>
+                <div class="solutions">
+                    <strong>Solutions:</strong>
+                    <ol>
+                        <li>Check internet connection speed</li>
+                        <li>Try uploading smaller file</li>
+                        <li>Make sure upload actually completed (check status)</li>
+                        <li>Reload page and check if file was uploaded</li>
+                        <li>Try different file format</li>
+                        <li>Close other applications using internet</li>
+                        <li>Try uploading again</li>
+                    </ol>
+                </div>
+            </div>
+
+            <hr style="margin: 40px 0; border: none; border-top: 1px solid #ddd;">
+            <p style="text-align: center; color: #999; font-size: 14px; margin-top: 40px;">
+                Need more help? Contact us at <strong>DGC2MHNE@proton.me</strong>
+            </p>
+        </div>
+    </div>
+    <script>
+        // Make first problem open by default
+        document.querySelector('.problem').classList.add('active');
+    </script>
+</body>
+</html>

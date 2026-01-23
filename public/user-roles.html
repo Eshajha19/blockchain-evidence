@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Roles - EVID-DGC</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" sizes="32x32" href="logo-32x32.png" type="image/png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #ffffff 0%, #fef2f2 50%, #dc2626 100%);
+            background-attachment: fixed;
+            color: #8B0000;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 30px;
+        }
+        .sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 12px;
+            height: fit-content;
+            box-shadow: 0 8px 32px rgba(220, 38, 38, 0.1);
+            border: 1px solid rgba(220, 38, 38, 0.2);
+        }
+        .sidebar h3 {
+            margin-bottom: 15px;
+            color: #D32F2F;
+        }
+        .sidebar ul {
+            list-style: none;
+        }
+        .sidebar li {
+            margin-bottom: 10px;
+        }
+        .sidebar a {
+            color: #B22222;
+            text-decoration: none;
+            display: block;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .sidebar a:hover {
+            background: #FFEBEE;
+            color: #D32F2F;
+        }
+        .main-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(220, 38, 38, 0.1);
+            border: 1px solid rgba(220, 38, 38, 0.2);
+        }
+        .breadcrumb {
+            font-size: 14px;
+            color: #DC143C;
+            margin-bottom: 20px;
+        }
+        .breadcrumb a {
+            color: #D32F2F;
+            text-decoration: none;
+        }
+        h1 {
+            color: #D32F2F;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        .subtitle {
+            color: #B22222;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        h2 {
+            color: #8B0000;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-left: 4px solid #D32F2F;
+            padding-left: 15px;
+        }
+        .role-card {
+            background: rgba(255, 235, 238, 0.8);
+            backdrop-filter: blur(5px);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #D32F2F;
+            border: 1px solid rgba(220, 38, 38, 0.2);
+        }
+        .role-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #D32F2F;
+            margin-bottom: 10px;
+        }
+        .role-description {
+            color: #B22222;
+            margin-bottom: 15px;
+        }
+        .permissions {
+            margin: 15px 0;
+        }
+        .permission-item {
+            padding: 5px 0;
+            color: #B22222;
+        }
+        .permission-item.yes {
+            color: #2E7D32;
+        }
+        .permission-item.no {
+            color: #D32F2F;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        th, td {
+            border: 1px solid rgba(220, 38, 38, 0.2);
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background: #D32F2F;
+            color: white;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background: rgba(255, 235, 238, 0.5);
+        }
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 8px 15px;
+            background: #D32F2F;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 16px rgba(220, 38, 38, 0.15);
+        }
+        .back-button:hover {
+            background: #C41C3B;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(220, 38, 38, 0.2);
+        }
+        .logo {
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #D32F2F;
+        }
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                display: none;
+            }
+            table {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">📚 EVID-DGC Docs</div>
+            <h3>Documentation</h3>
+            <ul>
+                <li><a href="quickstart.html">Quick Start</a></li>
+                <li><a href="user-roles.html" style="color: #D32F2F; font-weight: bold;">User Roles</a></li>
+                <li><a href="api-reference.html">API Reference</a></li>
+                <li><a href="troubleshooting.html">Troubleshooting</a></li>
+            </ul>
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+            <h3>Help</h3>
+            <ul>
+                <li><a href="index.html">← Back to Home</a></li>
+                <li><a href="mailto:DGC2MHNE@proton.me">Contact Support</a></li>
+            </ul>
+        </div>
+        <div class="main-content">
+            <a href="index.html" class="back-button">← Back to Home</a>
+            <div class="breadcrumb">
+                <a href="index.html">Home</a> > <a href="user-roles.html">Docs</a> > User Roles
+            </div>
+            <h1>User Roles</h1>
+            <p class="subtitle">Understanding Permissions and Access</p>
+
+            <div class="role-card">
+                <div class="role-title">👁️ Role 1: Public Viewer</div>
+                <div class="role-description">View-only access to public case information</div>
+                <div class="permissions">
+                    <strong>Permissions:</strong>
+                    <div class="permission-item yes">✓ View public cases</div>
+                    <div class="permission-item yes">✓ View evidence summaries</div>
+                    <div class="permission-item no">✗ Cannot upload evidence</div>
+                    <div class="permission-item no">✗ Cannot create cases</div>
+                </div>
+                <p><strong>Best For:</strong> Media, public interest, general viewers</p>
+            </div>
+
+            <div class="role-card">
+                <div class="role-title">🔍 Role 2: Investigator</div>
+                <div class="role-description">Full case and evidence management</div>
+                <div class="permissions">
+                    <strong>Permissions:</strong>
+                    <div class="permission-item yes">✓ Create new cases</div>
+                    <div class="permission-item yes">✓ Upload evidence</div>
+                    <div class="permission-item yes">✓ Manage investigations</div>
+                    <div class="permission-item yes">✓ Add case notes</div>
+                    <div class="permission-item no">✗ Cannot analyze evidence</div>
+                </div>
+                <p><strong>Best For:</strong> Police officers, detectives, crime investigators</p>
+            </div>
+
+            <div class="role-card">
+                <div class="role-title">🔬 Role 3: Forensic Analyst</div>
+                <div class="role-description">Technical analysis and forensic examination</div>
+                <div class="permissions">
+                    <strong>Permissions:</strong>
+                    <div class="permission-item yes">✓ Analyze evidence</div>
+                    <div class="permission-item yes">✓ Extract metadata</div>
+                    <div class="permission-item yes">✓ Verify file hashes</div>
+                    <div class="permission-item yes">✓ Generate analysis reports</div>
+                </div>
+                <p><strong>Best For:</strong> Forensic experts, lab technicians</p>
+            </div>
+
+            <div class="role-card">
+                <div class="role-title">⚖️ Role 4: Legal Professional</div>
+                <div class="role-description">Legal review and court preparation</div>
+                <div class="permissions">
+                    <strong>Permissions:</strong>
+                    <div class="permission-item yes">✓ Review cases</div>
+                    <div class="permission-item yes">✓ Approve for court</div>
+                    <div class="permission-item yes">✓ Add legal notes</div>
+                    <div class="permission-item yes">✓ Generate court documents</div>
+                </div>
+                <p><strong>Best For:</strong> Lawyers, prosecutors, legal advisors</p>
+            </div>
+
+            <div class="role-card">
+                <div class="role-title">🏛️ Role 5: Court Official</div>
+                <div class="role-description">Judicial proceedings and evidence admission</div>
+                <div class="permissions">
+                    <strong>Permissions:</strong>
+                    <div class="permission-item yes">✓ Manage judicial proceedings</div>
+                    <div class="permission-item yes">✓ Approve evidence admission</div>
+                    <div class="permission-item yes">✓ Issue rulings</div>
+                    <div class="permission-item yes">✓ View case status</div>
+                </div>
+                <p><strong>Best For:</strong> Judges, court administrators</p>
+            </div>
+
+            <div class="role-card">
+                <div class="role-title">📦 Role 6: Evidence Manager</div>
+                <div class="role-description">Chain of custody and storage management</div>
+                <div class="permissions">
+                    <strong>Permissions:</strong>
+                    <div class="permission-item yes">✓ Manage evidence storage</div>
+                    <div class="permission-item yes">✓ Track chain of custody</div>
+                    <div class="permission-item yes">✓ Update evidence status</div>
+                    <div class="permission-item yes">✓ Generate custody reports</div>
+                </div>
+                <p><strong>Best For:</strong> Evidence custodians, storage managers</p>
+            </div>
+
+            <div class="role-card">
+                <div class="role-title">📊 Role 7: Auditor</div>
+                <div class="role-description">Compliance and audit access</div>
+                <div class="permissions">
+                    <strong>Permissions:</strong>
+                    <div class="permission-item yes">✓ View all activities</div>
+                    <div class="permission-item yes">✓ Generate audit reports</div>
+                    <div class="permission-item yes">✓ Verify compliance</div>
+                    <div class="permission-item yes">✓ Track all changes</div>
+                </div>
+                <p><strong>Best For:</strong> Compliance officers, auditors</p>
+            </div>
+
+            <div class="role-card">
+                <div class="role-title">👑 Role 8: Administrator</div>
+                <div class="role-description">Complete system control and management</div>
+                <div class="permissions">
+                    <strong>Permissions:</strong>
+                    <div class="permission-item yes">✓ Full system access</div>
+                    <div class="permission-item yes">✓ Manage all users</div>
+                    <div class="permission-item yes">✓ Create/delete users</div>
+                    <div class="permission-item yes">✓ Manage system settings</div>
+                    <div class="permission-item yes">✓ View all data</div>
+                </div>
+                <p><strong>Best For:</strong> System administrators, IT managers</p>
+            </div>
+
+            <h2>Permissions Comparison Table</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Viewer</th>
+                        <th>Investigator</th>
+                        <th>Analyst</th>
+                        <th>Legal</th>
+                        <th>Court</th>
+                        <th>Evidence Mgr</th>
+                        <th>Auditor</th>
+                        <th>Admin</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>View Cases</strong></td>
+                        <td>✓</td>
+                        <td>✓</td>
+                        <td>✓</td>
+                        <td>✓</td>
+                        <td>✓</td>
+                        <td>✓</td>
+                        <td>✓</td>
+                        <td>✓</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Create Cases</strong></td>
+                        <td>✗</td>
+                        <td>✓</td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✓</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Upload Evidence</strong></td>
+                        <td>✗</td>
+                        <td>✓</td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✓</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Analyze Evidence</strong></td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✓</td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✓</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Approve for Court</strong></td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✓</td>
+                        <td>✓</td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✓</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Manage Users</strong></td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✓</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Audit Reports</strong></td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✓</td>
+                        <td>✓</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Delete Data</strong></td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✗</td>
+                        <td>✓</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <hr style="margin: 40px 0; border: none; border-top: 1px solid #ddd;">
+            <p style="text-align: center; color: #999; font-size: 14px; margin-top: 40px;">
+                Need help? Contact us at <strong>DGC2MHNE@proton.me</strong>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

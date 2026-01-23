@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Start - EVID-DGC</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" sizes="32x32" href="logo-32x32.png" type="image/png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #ffffff 0%, #fef2f2 50%, #dc2626 100%);
+            background-attachment: fixed;
+            color: #8B0000;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 30px;
+        }
+        .sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 12px;
+            height: fit-content;
+            box-shadow: 0 8px 32px rgba(220, 38, 38, 0.1);
+            border: 1px solid rgba(220, 38, 38, 0.2);
+        }
+        .sidebar h3 {
+            margin-bottom: 15px;
+            color: #D32F2F;
+        }
+        .sidebar ul {
+            list-style: none;
+        }
+        .sidebar li {
+            margin-bottom: 10px;
+        }
+        .sidebar a {
+            color: #B22222;
+            text-decoration: none;
+            display: block;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .sidebar a:hover {
+            background: #FFEBEE;
+            color: #D32F2F;
+        }
+        .main-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(220, 38, 38, 0.1);
+            border: 1px solid rgba(220, 38, 38, 0.2);
+        }
+        .breadcrumb {
+            font-size: 14px;
+            color: #DC143C;
+            margin-bottom: 20px;
+        }
+        .breadcrumb a {
+            color: #D32F2F;
+            text-decoration: none;
+        }
+        h1 {
+            color: #D32F2F;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        .subtitle {
+            color: #B22222;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        h2 {
+            color: #8B0000;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-left: 4px solid #D32F2F;
+            padding-left: 15px;
+        }
+        p, li {
+            margin-bottom: 10px;
+            color: #B22222;
+        }
+        ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        .step {
+            background: rgba(255, 235, 238, 0.8);
+            padding: 15px;
+            border-left: 4px solid #D32F2F;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+        }
+        .faq {
+            margin-top: 30px;
+        }
+        .faq-item {
+            background: rgba(255, 235, 238, 0.8);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid rgba(220, 38, 38, 0.2);
+            backdrop-filter: blur(5px);
+        }
+        .faq-item.active {
+            background: rgba(255, 205, 210, 0.9);
+            border-color: #D32F2F;
+        }
+        .faq-question {
+            font-weight: bold;
+            color: #D32F2F;
+            margin-bottom: 10px;
+        }
+        .faq-answer {
+            color: #B22222;
+            display: none;
+        }
+        .faq-item.active .faq-answer {
+            display: block;
+        }
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 8px 15px;
+            background: #D32F2F;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 16px rgba(220, 38, 38, 0.15);
+        }
+        .back-button:hover {
+            background: #C41C3B;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(220, 38, 38, 0.2);
+        }
+        .logo {
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #D32F2F;
+        }
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">📚 EVID-DGC Docs</div>
+            <h3>Documentation</h3>
+            <ul>
+                <li><a href="quickstart.html" style="color: #D32F2F; font-weight: bold;">Quick Start</a></li>
+                <li><a href="user-roles.html">User Roles</a></li>
+                <li><a href="api-reference.html">API Reference</a></li>
+                <li><a href="troubleshooting.html">Troubleshooting</a></li>
+            </ul>
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+            <h3>Help</h3>
+            <ul>
+                <li><a href="../index.html">← Back to Home</a></li>
+                <li><a href="mailto:DGC2MHNE@proton.me">Contact Support</a></li>
+            </ul>
+        </div>
+        <div class="main-content">
+            <a href="index.html" class="back-button">← Back to Home</a>
+            <div class="breadcrumb">
+                <a href="index.html">Home</a> > <a href="quickstart.html">Docs</a> > Quick Start
+            </div>
+            <h1>Quick Start</h1>
+            <p class="subtitle">Get up and running in minutes</p>
+
+            <h2>Prerequisites</h2>
+            <ul>
+                <li>MetaMask wallet extension installed</li>
+                <li>Modern web browser (Chrome, Firefox, Edge, Safari)</li>
+                <li>Internet connection</li>
+                <li>Valid email address</li>
+            </ul>
+
+            <h2>Step 1: Download MetaMask</h2>
+            <div class="step">
+                <ol>
+                    <li>Visit <strong>metamask.io</strong></li>
+                    <li>Click <strong>Download</strong></li>
+                    <li>Select your browser (Chrome, Firefox, Edge, Safari)</li>
+                    <li>Install the extension</li>
+                    <li>Restart your browser</li>
+                </ol>
+            </div>
+
+            <h2>Step 2: Create Your MetaMask Wallet</h2>
+            <div class="step">
+                <ol>
+                    <li>Click MetaMask icon in browser toolbar</li>
+                    <li>Click <strong>"Create a Wallet"</strong></li>
+                    <li>Create a strong password (minimum 8 characters)</li>
+                    <li><strong>IMPORTANT:</strong> Save your recovery phrase in a safe place (write it down!)</li>
+                    <li>Confirm your recovery phrase</li>
+                    <li>✅ Your wallet is created!</li>
+                </ol>
+            </div>
+
+            <h2>Step 3: Connect to EVID-DGC Website</h2>
+            <div class="step">
+                <ol>
+                    <li>Go to <strong>blockchain-evidence.onrender.com</strong></li>
+                    <li>Click <strong>"Connect MetaMask"</strong> button</li>
+                    <li>Approve the connection in MetaMask popup</li>
+                    <li>✅ Your wallet is now connected!</li>
+                </ol>
+            </div>
+
+            <h2>Step 4: Select Your Role</h2>
+            <div class="step">
+                <p>Choose from 8 roles:</p>
+                <ol>
+                    <li><strong>Public Viewer</strong> - View public cases</li>
+                    <li><strong>Investigator</strong> - Create cases, upload evidence</li>
+                    <li><strong>Forensic Analyst</strong> - Analyze evidence</li>
+                    <li><strong>Legal Professional</strong> - Legal review</li>
+                    <li><strong>Court Official</strong> - Judicial control</li>
+                    <li><strong>Evidence Manager</strong> - Manage storage</li>
+                    <li><strong>Auditor</strong> - Audit access</li>
+                    <li><strong>Administrator</strong> - Full control</li>
+                </ol>
+            </div>
+
+            <h2>Step 5: Complete Registration</h2>
+            <div class="step">
+                <ol>
+                    <li>Fill in your profile information:
+                        <ul style="margin-top: 10px;">
+                            <li>Full Name</li>
+                            <li>Badge Number (if applicable)</li>
+                            <li>Department</li>
+                            <li>Jurisdiction</li>
+                        </ul>
+                    </li>
+                    <li>Click <strong>Register</strong></li>
+                </ol>
+            </div>
+
+            <h2>Step 6: Start Using EVID-DGC</h2>
+            <div class="step">
+                <ol>
+                    <li>Go to your dashboard</li>
+                    <li>Click <strong>"Add Evidence"</strong> to upload files</li>
+                    <li>Create a new case</li>
+                    <li>Start managing evidence securely on blockchain!</li>
+                </ol>
+            </div>
+
+            <div class="faq">
+                <h2>Frequently Asked Questions</h2>
+                
+                <div class="faq-item" onclick="this.classList.toggle('active')">
+                    <div class="faq-question">❓ MetaMask not connecting?</div>
+                    <div class="faq-answer">
+                        Ensure MetaMask is installed and enabled. Check browser extensions. Try refreshing the page. Try a different browser if needed.
+                    </div>
+                </div>
+
+                <div class="faq-item" onclick="this.classList.toggle('active')">
+                    <div class="faq-question">❓ Can't find the Connect button?</div>
+                    <div class="faq-answer">
+                        Scroll to top of page or look in navigation menu. Make sure you're on the home page.
+                    </div>
+                </div>
+
+                <div class="faq-item" onclick="this.classList.toggle('active')">
+                    <div class="faq-question">❓ Password too weak?</div>
+                    <div class="faq-answer">
+                        Use at least 8 characters. Include uppercase, lowercase, numbers, and special characters (!@#$%^&*).
+                    </div>
+                </div>
+
+                <div class="faq-item" onclick="this.classList.toggle('active')">
+                    <div class="faq-question">❓ Lost my recovery phrase?</div>
+                    <div class="faq-answer">
+                        DO NOT share it with anyone. If lost, create a new wallet and contact support immediately at DGC2MHNE@proton.me
+                    </div>
+                </div>
+
+                <div class="faq-item" onclick="this.classList.toggle('active')">
+                    <div class="faq-question">❓ How do I upload evidence?</div>
+                    <div class="faq-answer">
+                        After login, go to your dashboard and click "Add Evidence" or "Upload" button. Select the file and follow the prompts.
+                    </div>
+                </div>
+            </div>
+
+            <hr style="margin: 40px 0; border: none; border-top: 1px solid #ddd;">
+            <p style="text-align: center; color: #999; font-size: 14px; margin-top: 40px;">
+                Need help? Contact us at <strong>DGC2MHNE@proton.me</strong>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
