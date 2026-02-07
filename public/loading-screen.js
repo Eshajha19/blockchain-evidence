@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let loadingCompleted = false;
     let loadingTimeouts = [];
 
-    const MINIMUM_DISPLAY_TIME = 3000; // Reduced from 5000 to 3000 for testing
+    const MINIMUM_DISPLAY_TIME = 3000; 
     const startTime = Date.now();
     
     console.log('Loading screen elements found:', {
@@ -106,7 +106,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
         
-        loadingCompleted = true;
 
         const elapsed = Date.now() - startTime;
         const remainingTime = Math.max(0, MINIMUM_DISPLAY_TIME - elapsed);
@@ -130,6 +129,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log('Hiding loading screen');
                 if (loadingScreen) {
                     loadingScreen.style.display = 'none';
+                    loadingCompleted = true;
                     console.log('Loading screen hidden');
                     console.log('Page should now be visible');
                 }
@@ -137,7 +137,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }, remainingTime);
     };
 
-    // Auto-complete after 8 seconds as a safety fallback
     const safetyTimeout = setTimeout(() => {
         console.warn('Safety timeout triggered - forcing loading screen to complete');
         if (typeof window.completeLoading === 'function' && !loadingCompleted) {
@@ -147,10 +146,8 @@ document.addEventListener('DOMContentLoaded', function () {
     
     loadingTimeouts.push(safetyTimeout);
 
-    // Initialize loading screen
     initLoadingScreen();
     
-    // Expose function for manual testing
     window.debugLoadingScreen = {
         forceComplete: function() {
             console.log('Manual force complete triggered');
